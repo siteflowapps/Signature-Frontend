@@ -1,0 +1,121 @@
+name: Deploy Static (S3 + CloudFront)
+
+# ─────────────────────────────────────────────────────────────────────────
+# CDO Frontend — UAT/Prod deploy to S3 + CloudFront
+#
+# Triggers:
+#   push to `uat`        → builds, syncs to UAT S3 bucket, invalidates UAT CF
+#   tag matching `prod-v*` → builds, syncs to PROD S3 bucket, invalidates PROD CF
+#                            (tag must be on `main`)
+#
+# QA stays on the existing deploy.yml (Docker → ECR → SSM EC2). This file
+# is the post-Step-10 path: static React build → S3 → CloudFront.
+#
+# No Docker build, no env-var injection at build time. Vite's production
+# build uses relative `/api/v1/*` paths; CloudFront's path-pattern routing
+# forwards those to the ALB. Same artifact bytes deployed to UAT and prod.
+# ─────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [uat]
+    tags: ['prod-v*']
+
+permissions:
+  id-token: write   # required for AWS OIDC token
+  contents: read
+
+env:
+  AWS_REGION: ap-south-1
+  AWS_ROLE: arn:aws:iam::328815106018:role/siteflow-cdo-frontend-deploy
+
+  # Static deploy targets — created in siteflow-infrastructure Step 10B.
+  # These rarely change; if Terraform recreates them, update this file.
+  S3_BUCKET_UAT: siteflow-cdo-uat-frontend-328815106018
+  S3_BUCKET_PROD: siteflow-cdo-prod-frontend-328815106018
+  CF_DIST_UAT: E1Z0Y98L9DFNZ2
+  CF_DIST_PROD: E1GUHNA20CBGYU
+
+jobs:
+  deploy-static:
+    name: Build, sync to S3, invalidate CloudFront
+    runs-on: ubuntu-latest
+
+    # Tag-triggered runs use the `prod` GitHub Environment (manual approval gate
+    # once GitHub Pro is on); branch-triggered uses `uat`. The OIDC trust on
+    # siteflow-cdo-frontend-deploy only permits these two environments — anything
+    # else fails STS AssumeRoleWithWebIdentity.
+    environment: ${{ startsWith(github.ref, 'refs/tags/prod-v') && 'prod' || 'uat' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-${{ github.run_id }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        # Vite outputs to ./dist by default. No env vars baked in at build.
+        run: npm run build
+
+      - name: Resolve env-scoped deploy targets
+        id: targets
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/prod-v* ]]; then
+            echo "bucket=${{ env.S3_BUCKET_PROD }}" >> "$GITHUB_OUTPUT"
+            echo "dist=${{ env.CF_DIST_PROD }}"     >> "$GITHUB_OUTPUT"
+            echo "label=prod"                       >> "$GITHUB_OUTPUT"
+          else
+            echo "bucket=${{ env.S3_BUCKET_UAT }}"  >> "$GITHUB_OUTPUT"
+            echo "dist=${{ env.CF_DIST_UAT }}"      >> "$GITHUB_OUTPUT"
+            echo "label=uat"                        >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync ./dist/ to S3
+        env:
+          BUCKET: ${{ steps.targets.outputs.bucket }}
+        run: |
+          set -euo pipefail
+          # Hash-named bundles in /assets are immutable — cache forever at the edge.
+          # --delete removes orphaned files from previous builds (otherwise old
+          # bundles accumulate forever).
+          aws s3 sync ./dist/ "s3://$BUCKET/" \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "index.html"
+          # index.html references whatever bundle hashes were emitted this build,
+          # so it MUST not be cached. no-cache means CF will re-validate every time.
+          aws s3 cp ./dist/index.html "s3://$BUCKET/index.html" \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "text/html; charset=utf-8"
+
+      - name: Invalidate CloudFront
+        env:
+          DIST: ${{ steps.targets.outputs.dist }}
+        run: |
+          set -euo pipefail
+          # Only /index.html and / need invalidating. Hash-named bundle files
+          # are NEW S3 keys per build → CF cache miss → fetched fresh, no
+          # invalidation needed (and including them would pad the bill).
+          INVAL=$(aws cloudfront create-invalidation \
+            --distribution-id "$DIST" \
+            --paths "/index.html" "/" \
+            --query 'Invalidation.Id' --output text)
+          echo "Invalidation: $INVAL"
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "$DIST" \
+            --id "$INVAL"
+          echo "✅ Deployed to ${{ steps.targets.outputs.label }} (distribution $DIST)"

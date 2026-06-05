@@ -1,0 +1,7 @@
+{
+  "name": "Siteflow CDO",
+  "description": "Enterprise Retail Execution & Campaign Management Platform featuring Outlet Lifecycle Management, PFP Incentive Engine, and Invoice OCR processing.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
