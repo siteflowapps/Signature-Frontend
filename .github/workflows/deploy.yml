@@ -1,13 +1,16 @@
 name: Deploy
 
 # ─────────────────────────────────────────────────────────────────────────
-# CDO Frontend deploy pipeline
+# Signature Frontend deploy pipeline — QA path (Docker → ECR → SSM)
 #
 # Triggers:
 #   push to `qa`  → builds multi-arch, deploys to QA EC2 via SSM
-#   (UAT/prod wired later when Fargate frontend services exist)
 #
-# Why multi-arch: QA EC2 is arm64; same image manifest works for both archs.
+# UAT and prod go through deploy-static.yml (S3 + CloudFront) — see that
+# file. No Docker for those envs.
+#
+# Why multi-arch: QA EC2 is arm64 (Graviton t4g.medium); same image
+# manifest can also run on amd64 if a developer ever pulls it locally.
 # ─────────────────────────────────────────────────────────────────────────
 
 on:
@@ -20,16 +23,22 @@ permissions:
 
 env:
   AWS_REGION: ap-south-1
-  AWS_ROLE: arn:aws:iam::328815106018:role/siteflow-cdo-github-actions
-  ECR_REPOSITORY: siteflow-cdo-frontend
+  AWS_ROLE: arn:aws:iam::328815106018:role/siteflow-signature-github-actions
+  ECR_REPOSITORY: siteflow-signature-frontend
+  # QA EC2 instance — shared across CDO, Ops, Atlas, Signature. Look up via
+  # `aws ec2 describe-instances --filters Name=tag:Name,Values=siteflow-qa-ec2`
+  # and update here if the instance is ever replaced.
   QA_INSTANCE_ID: i-0f0f21fa29ddaae74
-  QA_SERVICE_NAME: cdo-frontend
+  QA_SERVICE_NAME: signature-frontend
 
 jobs:
   build:
     name: Build and push image
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name }}
+    # NOTE: no `environment:` keyword — siteflowapps is on GitHub Free plan
+    # which doesn't allow Environments on private repos. OIDC trust on the
+    # AWS IAM role uses ref-based subs (refs/heads/qa) as a fallback. When
+    # the org upgrades to Team/Pro, add `environment: qa` back here.
     steps:
       - uses: actions/checkout@v4
 
@@ -70,7 +79,7 @@ jobs:
     needs: build
     if: github.ref_name == 'qa'
     runs-on: ubuntu-latest
-    environment: qa
+    # See note on `build` job — no env on Free plan org.
     steps:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -79,7 +88,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-${{ github.run_id }}
 
-      - name: SSM RunCommand → deploy.sh cdo-frontend
+      - name: SSM RunCommand → deploy.sh signature-frontend
         env:
           INSTANCE_ID: ${{ env.QA_INSTANCE_ID }}
           SERVICE: ${{ env.QA_SERVICE_NAME }}
@@ -88,7 +97,7 @@ jobs:
           CMD_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name AWS-RunShellScript \
-            --comment "deploy cdo-frontend from $GITHUB_SHA" \
+            --comment "deploy signature-frontend from $GITHUB_SHA" \
             --parameters "commands=[\"/opt/siteflow/deploy.sh $SERVICE\"]" \
             --query 'Command.CommandId' --output text)
           echo "Command ID: $CMD_ID"

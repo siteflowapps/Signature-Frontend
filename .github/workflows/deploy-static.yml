@@ -1,19 +1,26 @@
 name: Deploy Static (S3 + CloudFront)
 
 # ─────────────────────────────────────────────────────────────────────────
-# CDO Frontend — UAT/Prod deploy to S3 + CloudFront
+# Signature Frontend — UAT/Prod deploy to S3 + CloudFront
 #
 # Triggers:
 #   push to `uat`        → builds, syncs to UAT S3 bucket, invalidates UAT CF
 #   tag matching `prod-v*` → builds, syncs to PROD S3 bucket, invalidates PROD CF
 #                            (tag must be on `main`)
 #
-# QA stays on the existing deploy.yml (Docker → ECR → SSM EC2). This file
-# is the post-Step-10 path: static React build → S3 → CloudFront.
+# QA stays on deploy.yml (Docker → ECR → SSM EC2). This file is the static
+# React build → S3 → CloudFront path for UAT/prod.
 #
-# No Docker build, no env-var injection at build time. Vite's production
-# build uses relative `/api/v1/*` paths; CloudFront's path-pattern routing
-# forwards those to the ALB. Same artifact bytes deployed to UAT and prod.
+# No Docker, no env-var injection at build time. Vite's production build
+# uses relative `/api/v1/*` paths; CloudFront's path-pattern routing
+# forwards those to the signature ALB. Same artifact bytes deployed to
+# UAT and prod (immutable hash-named bundles + cache-busted index.html).
+#
+# NOTE: signature-prod CF distribution has flip_dns=false (Option B
+# dormant). Push to a prod-v* tag will deploy to the prod S3 bucket and
+# invalidate the prod CF distribution, but signature.siteflow.tech apex
+# isn't aliased there yet — to expose, update siteflow-infrastructure TF
+# to set flip_dns=true on signature-prod in cloudfront_frontend.tf + apply.
 # ─────────────────────────────────────────────────────────────────────────
 
 on:
@@ -22,30 +29,26 @@ on:
     tags: ['prod-v*']
 
 permissions:
-  id-token: write   # required for AWS OIDC token
+  id-token: write
   contents: read
 
 env:
   AWS_REGION: ap-south-1
-  AWS_ROLE: arn:aws:iam::328815106018:role/siteflow-cdo-frontend-deploy
+  AWS_ROLE: arn:aws:iam::328815106018:role/siteflow-signature-frontend-deploy
 
-  # Static deploy targets — created in siteflow-infrastructure Step 10B.
-  # These rarely change; if Terraform recreates them, update this file.
-  S3_BUCKET_UAT: siteflow-cdo-uat-frontend-328815106018
-  S3_BUCKET_PROD: siteflow-cdo-prod-frontend-328815106018
-  CF_DIST_UAT: E1Z0Y98L9DFNZ2
-  CF_DIST_PROD: E1GUHNA20CBGYU
+  # Static deploy targets — created by siteflow-infrastructure Session 38.
+  S3_BUCKET_UAT: siteflow-signature-uat-frontend-328815106018
+  S3_BUCKET_PROD: siteflow-signature-prod-frontend-328815106018
+  CF_DIST_UAT: EQOHGB9IODMHF
+  CF_DIST_PROD: EEE9NYO9TZDQ4
 
 jobs:
   deploy-static:
     name: Build, sync to S3, invalidate CloudFront
     runs-on: ubuntu-latest
-
-    # Tag-triggered runs use the `prod` GitHub Environment (manual approval gate
-    # once GitHub Pro is on); branch-triggered uses `uat`. The OIDC trust on
-    # siteflow-cdo-frontend-deploy only permits these two environments — anything
-    # else fails STS AssumeRoleWithWebIdentity.
-    environment: ${{ startsWith(github.ref, 'refs/tags/prod-v') && 'prod' || 'uat' }}
+    # NOTE: no `environment:` keyword — siteflowapps is on GitHub Free plan
+    # which doesn't allow Environments on private repos. OIDC trust on the
+    # AWS IAM role uses ref-based subs (refs/heads/uat, refs/tags/prod-v*).
 
     steps:
       - name: Checkout
@@ -68,7 +71,6 @@ jobs:
         run: npm ci
 
       - name: Build
-        # Vite outputs to ./dist by default. No env vars baked in at build.
         run: npm run build
 
       - name: Resolve env-scoped deploy targets
@@ -89,15 +91,10 @@ jobs:
           BUCKET: ${{ steps.targets.outputs.bucket }}
         run: |
           set -euo pipefail
-          # Hash-named bundles in /assets are immutable — cache forever at the edge.
-          # --delete removes orphaned files from previous builds (otherwise old
-          # bundles accumulate forever).
           aws s3 sync ./dist/ "s3://$BUCKET/" \
             --delete \
             --cache-control "public, max-age=31536000, immutable" \
             --exclude "index.html"
-          # index.html references whatever bundle hashes were emitted this build,
-          # so it MUST not be cached. no-cache means CF will re-validate every time.
           aws s3 cp ./dist/index.html "s3://$BUCKET/index.html" \
             --cache-control "no-cache, no-store, must-revalidate" \
             --content-type "text/html; charset=utf-8"
@@ -107,9 +104,6 @@ jobs:
           DIST: ${{ steps.targets.outputs.dist }}
         run: |
           set -euo pipefail
-          # Only /index.html and / need invalidating. Hash-named bundle files
-          # are NEW S3 keys per build → CF cache miss → fetched fresh, no
-          # invalidation needed (and including them would pad the bill).
           INVAL=$(aws cloudfront create-invalidation \
             --distribution-id "$DIST" \
             --paths "/index.html" "/" \
