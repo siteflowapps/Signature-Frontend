@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { UserRole, DashboardStats } from '../types';
 import { useDashboardQuery } from '../hooks/queries/useDashboardQuery';
 import DistributorDashboard from './distributor/DistributorDashboard';
+import CoolerDashboard from './cooler/CoolerDashboard';
+import MarketingDashboard from './marketing/MarketingDashboard';
 
 // ─── Shared Helpers ───────────────────────────────────────────────────────────
 const fmt = (n: number) => n.toLocaleString('en-IN');
@@ -128,8 +130,8 @@ const AdminDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Platform Overview</h2>
-          <p className="text-slate-400 text-sm mt-0.5">Full system visibility · SiteFlow CDO</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">NHQ Team Overview</h2>
+          <p className="text-slate-400 text-sm mt-0.5">Full system visibility · Signature Outlets</p>
         </div>
         <div className="flex gap-2">
           <Link to="/businesses/add" className="flex items-center gap-1.5 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-800 transition-all">
@@ -182,8 +184,8 @@ const BusinessAdminDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">CDO Program Dashboard</h2>
-          <p className="text-slate-400 text-sm mt-0.5">Campa Destination Outlet Program</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Signature Outlets Dashboard</h2>
+          <p className="text-slate-400 text-sm mt-0.5">Signature Outlets Retailer App</p>
         </div>
         <div className="flex gap-2">
           <Link to="/add-user" className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-600/20">
@@ -240,7 +242,7 @@ const FinanceDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Finance Dashboard</h2>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Finance Manager Dashboard</h2>
           <p className="text-slate-400 text-sm mt-0.5">Invoice verification & payout settlement</p>
         </div>
         <Link to="/payouts" className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:-translate-y-0.5 transition-all">
@@ -286,22 +288,20 @@ const FinanceDashboard: React.FC = () => {
   );
 };
 
-// ─── ROLE: RBL / SM / BUSINESS_USER ──────────────────────────────────────────
+// ─── ROLE: RSM / BUSINESS_USER ───────────────────────────────────────────────
 const FieldManagerDashboard: React.FC = () => {
   const { user } = useAuth();
   const role = user?.role;
-  const isRBL = role === UserRole.RBL;
-  const isSM  = role === UserRole.SM;
+  const isRSM = role === UserRole.RSM;
 
   const { stats, loading } = useDashboardStats();
 
   const titles: Record<string, { title: string; sub: string }> = {
-    RBL:           { title: 'Regional Business Overview',  sub: 'Region-level performance · RBL' },
-    SM:            { title: 'Sales Manager Dashboard',     sub: 'Territory monitoring · SM' },
+    RSM:           { title: 'Regional Sales Overview',     sub: 'Region-level performance · RSM' },
     BUSINESS_USER: { title: 'Business Operations Overview', sub: 'Operations · Field activity' },
-    TRADE_MARKETING: { title: 'Trade Marketing Dashboard', sub: 'CDO program activity' },
+    TRADE_MARKETING: { title: 'Trade Marketing Dashboard', sub: 'Signature Outlets program activity' },
     CSO:           { title: 'CSO Dashboard',               sub: 'Sales operations overview' },
-    FINANCE:       { title: 'Finance Overview',            sub: 'Financial activity summary' },
+    FINANCE:       { title: 'Finance Manager Overview',    sub: 'Financial activity summary' },
   };
   const t = titles[role || ''] || { title: 'Operations Overview', sub: 'Territory monitoring' };
 
@@ -322,10 +322,9 @@ const FieldManagerDashboard: React.FC = () => {
 
       {/* KPIs — Row 2: Team + Invoice stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {isRBL && <KpiCard loading={loading} label="Sales Managers" value={fmt(stats.totalSm || 0)} icon={Icons.users} iconColor="bg-sky-50 text-sky-600" />}
-        {(isRBL || isSM) && <KpiCard loading={loading} label="ASM Count" value={fmt(stats.totalAsm || 0)} icon={Icons.users} iconColor="bg-indigo-50 text-indigo-600" />}
+        {isRSM && <KpiCard loading={loading} label="ASM Count" value={fmt(stats.totalAsm || 0)} icon={Icons.users} iconColor="bg-indigo-50 text-indigo-600" />}
         <KpiCard loading={loading} label="ASE Count" value={fmt(stats.totalAse || 0)} icon={Icons.users} iconColor="bg-sky-50 text-sky-600" />
-        {isSM && <KpiCard loading={loading} to="/outlets" label="ASM Pending Outlets" value={fmt(stats.asmPendingOutlets || 0)} badge={(stats.asmPendingOutlets || 0) > 0 ? 'Needs Attention' : 'Clear'} badgeColor={(stats.asmPendingOutlets || 0) > 0 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'} icon={Icons.alert} iconColor="bg-orange-50 text-orange-600" />}
+        {isRSM && <KpiCard loading={loading} to="/outlets" label="ASM Pending Outlets" value={fmt(stats.asmPendingOutlets || 0)} badge={(stats.asmPendingOutlets || 0) > 0 ? 'Needs Attention' : 'Clear'} badgeColor={(stats.asmPendingOutlets || 0) > 0 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'} icon={Icons.alert} iconColor="bg-orange-50 text-orange-600" />}
       </div>
 
       {/* Quick Navigation */}
@@ -351,13 +350,17 @@ const Dashboard: React.FC = () => {
   const role = user?.role;
 
   const isAdmin = role === UserRole.SUPER_ADMIN;
-  const isBusinessAdmin = role === UserRole.BUSINESS_ADMIN;
-  const isFinanceAdmin = role === UserRole.FINANCE_ADMIN;
+  const isBusinessAdmin = role === UserRole.NHQ_ADMIN || role === UserRole.BUSINESS_ADMIN;
+  const isFinanceAdmin = role === UserRole.FINANCE_ADMIN || role === UserRole.FINANCE_MANAGER;
   const isDistributor = role === UserRole.DISTRIBUTOR || role === UserRole.DISTRIBUTOR_MANAGER;
+  const isCoolerTeam = role === UserRole.COOLER_TEAM;
+  const isMarketingManager = role === UserRole.MARKETING_MANAGER;
 
   if (isAdmin) return <AdminDashboard />;
   if (isBusinessAdmin) return <BusinessAdminDashboard />;
   if (isFinanceAdmin) return <FinanceDashboard />;
+  if (isCoolerTeam) return <CoolerDashboard />;
+  if (isMarketingManager) return <MarketingDashboard />;
   if (isDistributor) return <DistributorDashboard />;
   return <FieldManagerDashboard />;
 };

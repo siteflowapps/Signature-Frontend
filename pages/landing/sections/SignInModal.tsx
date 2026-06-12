@@ -189,7 +189,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ open, onClose }) => {
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
             <div className="lp-modal-logo">
               <div className="lp-modal-logo-icon">S</div>
-              <span className="lp-modal-logo-text">Siteflow <span style={{ color: 'var(--lp-primary)' }}>CDO</span></span>
+              <span className="lp-modal-logo-text">Signature <span style={{ color: 'var(--lp-primary)' }}>Outlets</span></span>
             </div>
             <h2 className="lp-modal-title">
               {otpStep === 'PHONE' ? 'Sign In' : 'Verify Your Phone'}
@@ -309,13 +309,11 @@ export const SignInModal: React.FC<SignInModalProps> = ({ open, onClose }) => {
             <p style={{ fontSize: '8px', fontWeight: 700, color: 'var(--lp-text-muted)', textTransform: 'uppercase', letterSpacing: '0.15em', textAlign: 'center', marginBottom: '10px' }}>Dev Profiles</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
               {[
-                { label: 'B-Admin', phone: '9999999990' },
-                { label: 'B-User', phone: '9999999997' },
-                { label: 'Fin-Admin', phone: '9999999991' },
-                { label: 'RBL', phone: '9999999992' },
-                { label: 'SM', phone: '9999999993' },
-                { label: 'Distributor', phone: '99999 99998' },
-                { label: 'DM', phone: '99999 99996' },
+                { label: 'NHQ Admin', phone: '9876543210' },
+                { label: 'Fin Mgr', phone: '9876543211' },
+                { label: 'Mktg Mgr', phone: '9876543212' },
+                { label: 'Cooler', phone: '9876543213' },
+                { label: 'RSM', phone: '9876543214' },
               ].map((p, i) => (
                 <button key={i} type="button"
                   onClick={() => { setPhone(formatPhone(p.phone)); setOtpStep('PHONE'); setError(''); }}
@@ -351,7 +349,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ open, onClose }) => {
         {!isSuccess && (
           <div className="lp-modal-footer">
             <span style={{ fontSize: '10px', color: 'var(--lp-text-muted)', fontWeight: 500 }}>
-              Powered by <span style={{ fontWeight: 700, color: 'var(--lp-text-secondary)' }}>Siteflow</span>
+              Powered by <span style={{ fontWeight: 700, color: 'var(--lp-text-secondary)' }}>Signature Outlets</span>
             </span>
           </div>
         )}

@@ -30,7 +30,10 @@ const SlabsList = React.lazy(() => import('./pages/SlabsList'));
 const Team = React.lazy(() => import('./pages/Team'));
 const Unauthorized = React.lazy(() => import('./pages/Unauthorized'));
 const LocationsPage = React.lazy(() => import('./pages/LocationsPage'));
-const AseLookupPage = React.lazy(() => import('./pages/AseLookupPage'));
+const ManageLocationsPage = React.lazy(() => import('./pages/ManageLocationsPage'));
+const AsmLookupPage = React.lazy(() => import('./pages/AsmLookupPage'));
+const CoolerRequestsPage = React.lazy(() => import('./pages/cooler/CoolerRequestsPage'));
+const MarketingRequestsPage = React.lazy(() => import('./pages/marketing/MarketingRequestsPage'));
 const DmLookupPage = React.lazy(() => import('./pages/DMLookupPage'));
 const SupportTicketsPage = React.lazy(() => import('./pages/SupportTicketsPage'));
 const StockReportsPage = React.lazy(() => import('./pages/StockReportsPage'));
@@ -128,31 +131,31 @@ const AppRoutes: React.FC = () => {
           } />
 
           <Route path="/distributors" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.FINANCE_ADMIN, UserRole.BUSINESS_USER, UserRole.RBL, UserRole.SM, UserRole.SUPPORT]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.FINANCE_ADMIN, UserRole.FINANCE_MANAGER, UserRole.BUSINESS_USER, UserRole.RSM, UserRole.SUPPORT]}>
               <DistributorsList />
             </ProtectedRoute>
           } />
 
           <Route path="/distributors/add" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN]}>
               <AddDistributor />
             </ProtectedRoute>
           } />
 
           <Route path="/slabs" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.FINANCE_ADMIN, UserRole.BUSINESS_USER, UserRole.RBL, UserRole.SM]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.FINANCE_ADMIN, UserRole.FINANCE_MANAGER, UserRole.BUSINESS_USER, UserRole.RSM]}>
               <SlabsList />
             </ProtectedRoute>
           } />
 
           <Route path="/payouts" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN, UserRole.FINANCE_MANAGER]}>
               <Payouts />
             </ProtectedRoute>
           } />
 
           <Route path="/payouts/settlement/:outletId/:month" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN, UserRole.FINANCE_MANAGER]}>
               <TransactionDetail />
             </ProtectedRoute>
           } />
@@ -164,7 +167,7 @@ const AppRoutes: React.FC = () => {
           } />
 
           <Route path="/stock-reports" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.BUSINESS_USER, UserRole.FINANCE_ADMIN]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.BUSINESS_USER, UserRole.FINANCE_ADMIN, UserRole.FINANCE_MANAGER]}>
               <StockReportsPage />
             </ProtectedRoute>
           } />
@@ -182,25 +185,25 @@ const AppRoutes: React.FC = () => {
           } />
 
           <Route path="/add-user" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN]}>
               <AddUser />
             </ProtectedRoute>
           } />
 
           <Route path="/users" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.FINANCE_ADMIN, UserRole.BUSINESS_USER, UserRole.RBL, UserRole.SM]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.FINANCE_ADMIN, UserRole.FINANCE_MANAGER, UserRole.BUSINESS_USER, UserRole.RSM]}>
               <Users />
             </ProtectedRoute>
           } />
 
           <Route path="/users/:id" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.FINANCE_ADMIN, UserRole.BUSINESS_USER, UserRole.RBL, UserRole.SM]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.FINANCE_ADMIN, UserRole.FINANCE_MANAGER, UserRole.BUSINESS_USER, UserRole.RSM]}>
               <UserDetail />
             </ProtectedRoute>
           } />
 
           <Route path="/team" element={
-            <ProtectedRoute allowedRoles={[UserRole.RBL, UserRole.SM]}>
+            <ProtectedRoute allowedRoles={[UserRole.RSM]}>
               <Team />
             </ProtectedRoute>
           } />
@@ -211,14 +214,32 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           } />
 
-          <Route path="/ase-lookup" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.BUSINESS_USER]}>
-              <AseLookupPage />
+          <Route path="/manage-locations" element={
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN]}>
+              <ManageLocationsPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/asm-lookup" element={
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.RSM]}>
+              <AsmLookupPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/cooler-requests" element={
+            <ProtectedRoute allowedRoles={[UserRole.COOLER_TEAM, UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN]}>
+              <CoolerRequestsPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/marketing-requests" element={
+            <ProtectedRoute allowedRoles={[UserRole.MARKETING_MANAGER, UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN]}>
+              <MarketingRequestsPage />
             </ProtectedRoute>
           } />
 
           <Route path="/dm-lookup" element={
-            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.BUSINESS_ADMIN]}>
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN]}>
               <DmLookupPage />
             </ProtectedRoute>
           } />

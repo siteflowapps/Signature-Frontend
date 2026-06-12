@@ -16,13 +16,20 @@ import { EditUserProfilePanel } from '../components/EditUserProfilePanel';
 import { queryKeys } from '../hooks/queries/queryKeys';
 import { useUserHierarchyQuery, useInvalidateHierarchy } from '../hooks/queries/useUserHierarchyQuery';
 
-const PROMOTABLE_ROLES = new Set(['ASE', 'ASM', 'SM', 'RBL']);
-const PARENT_CHANGEABLE_ROLES = new Set(['ASE', 'ASM', 'SM']);
-const SUBORDINATE_HOLDING_ROLES = new Set(['ASM', 'SM', 'RBL']);
+// Sales-tree roles can be promoted (backend SALES_TREE_ROLES = RSM, ASM, ASE). CSO is a leaf.
+const PROMOTABLE_ROLES = new Set(['ASE', 'ASM', 'RSM']);
+// CSO has a reporting line (parent ASE) so it can be reassigned, even though it's not promotable.
+const PARENT_CHANGEABLE_ROLES = new Set(['CSO', 'ASE', 'ASM']);
+// Roles that hold transferable user subordinates (ASE manages outlets/distributors, not users).
+const SUBORDINATE_HOLDING_ROLES = new Set(['ASM', 'RSM']);
 // Roles that use the new hierarchy-aware deactivate/reactivate panels.
-const HIERARCHY_DEACTIVATE_ROLES = new Set(['ASE', 'ASM', 'SM']);
+const HIERARCHY_DEACTIVATE_ROLES = new Set(['ASE', 'ASM']);
 // Roles that belong to the sales ladder — show the Reporting hierarchy card for these.
-const HIERARCHY_VISIBLE_ROLES = new Set(['ASE', 'ASM', 'SM', 'RBL']);
+const HIERARCHY_VISIBLE_ROLES = new Set(['CSO', 'ASE', 'ASM', 'RSM']);
+// Roles that show the "Mapped Distributors" card.
+const DISTRIBUTOR_VISIBLE_ROLES = new Set(['ASE', 'ASM', 'RSM', 'CSO']);
+// Of those, only these can actually hold directly-assigned distributors (backend FieldDistributorAssignment).
+const DISTRIBUTOR_HOLDING_ROLES = new Set(['ASE', 'ASM']);
 
 const getInitials = (name: string | undefined) => {
   if (!name) return '?';
@@ -84,6 +91,11 @@ const UserDetail: React.FC = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
+  // Mapped distributors (only fetched for roles that can hold them: ASE / ASM)
+  const [distributors, setDistributors] = useState<{ id: string; name: string; phone?: string | null; dmsId?: string | null }[]>([]);
+  const [distLoading, setDistLoading] = useState(false);
+  const [distError, setDistError] = useState<string | null>(null);
+
   // Resolve the user's location to display city/pincode in the identity card.
   useEffect(() => {
     if (!userData?.locationId) { setUserLocation(null); return; }
@@ -98,8 +110,43 @@ const UserDetail: React.FC = () => {
     return () => { cancelled = true; };
   }, [userData?.locationId]);
 
-  const isLadderRole = userData ? ['ASE', 'ASM', 'SM', 'RBL'].includes(userData.role) : false;
+  const isLadderRole = userData ? ['CSO', 'ASE', 'ASM', 'RSM'].includes(userData.role) : false;
   const { data: hierarchyData, isLoading: hierarchyLoading } = useUserHierarchyQuery(isLadderRole ? userData?.id : undefined);
+
+  // Fetch mapped distributors for roles that can hold them (ASE/ASM). RSM/CSO show a placeholder instead.
+  useEffect(() => {
+    if (!userData || !DISTRIBUTOR_HOLDING_ROLES.has(userData.role)) {
+      setDistributors([]);
+      setDistError(null);
+      return;
+    }
+    let cancelled = false;
+    setDistLoading(true);
+    setDistError(null);
+    (async () => {
+      try {
+        const res = await apiService.users.getDistributorsByUser(userData.id);
+        if (cancelled) return;
+        if (!res.success) { setDistError('Could not load distributors.'); return; }
+        const base = res.data || [];
+        // Enrich each mapping with phone + DMS ID (the mapping endpoint only returns id/name).
+        const enriched = await Promise.all(base.map(async (d) => {
+          try {
+            const full = await apiService.distributors.getById(d.id);
+            return { id: d.id, name: d.name, phone: full.data?.phone, dmsId: full.data?.dmsId };
+          } catch {
+            return { id: d.id, name: d.name };
+          }
+        }));
+        if (!cancelled) setDistributors(enriched);
+      } catch {
+        if (!cancelled) setDistError('Could not load distributors.');
+      } finally {
+        if (!cancelled) setDistLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [userData?.id, userData?.role]);
   const invalidateHierarchy = useInvalidateHierarchy();
 
   const [openPanel, setOpenPanel] = useState<'role' | 'parent' | 'transfer' | 'deactivate' | 'reactivate' | null>(null);
@@ -107,7 +154,7 @@ const UserDetail: React.FC = () => {
   const [statusToggleLoading, setStatusToggleLoading] = useState(false);
   const [statusToggleError, setStatusToggleError] = useState<string | null>(null);
 
-  const canManage = currentUser?.role === UserRole.SUPER_ADMIN || currentUser?.role === UserRole.BUSINESS_ADMIN;
+  const canManage = currentUser?.role === UserRole.SUPER_ADMIN || currentUser?.role === UserRole.NHQ_ADMIN || currentUser?.role === UserRole.BUSINESS_ADMIN;
   const isSelf = !!currentUser?.id && currentUser.id === id;
   const effectiveStatus = statusOverride ?? userData?.status ?? 'UNKNOWN';
   const isActive = effectiveStatus === 'ACTIVE';
@@ -157,7 +204,7 @@ const UserDetail: React.FC = () => {
 
   // Tree rendering — parents (top-down) → self → children. New API gives parents top-most first;
   // sort defensively in case ordering changes server-side.
-  const ROLE_RANK: Record<string, number> = { RBL: 0, SM: 1, ASM: 2, ASE: 3 };
+  const ROLE_RANK: Record<string, number> = { RSM: 0, ASM: 1, ASE: 2, CSO: 3 };
   const treeAncestors = useMemo(() => {
     if (!hierarchyData) return [] as HierarchyMember[];
     return [...hierarchyData.parents].sort((a, b) => (ROLE_RANK[a.role] ?? 99) - (ROLE_RANK[b.role] ?? 99));
@@ -400,6 +447,66 @@ const UserDetail: React.FC = () => {
         </div>
       </div>
 
+      {/* Mapped Distributors — ASE/ASM (real data), RSM/CSO (placeholder) */}
+      {DISTRIBUTOR_VISIBLE_ROLES.has(userData.role) && (
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Mapped Distributors</h2>
+            {DISTRIBUTOR_HOLDING_ROLES.has(userData.role) && !distLoading && !distError && (
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                {distributors.length} mapped
+              </span>
+            )}
+          </div>
+
+          {!DISTRIBUTOR_HOLDING_ROLES.has(userData.role) ? (
+            // RSM / CSO — distributors aren't directly assigned to this role
+            <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50/50 rounded-xl border border-slate-100 border-dashed">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
+                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10" />
+                </svg>
+              </div>
+              <p className="text-sm font-bold text-slate-600 mb-1">Not applicable for {roleLabel}</p>
+              <p className="text-xs text-slate-400 max-w-xs">
+                Distributors are mapped directly to ASE and ASM users only. {roleLabel}s don't hold distributor assignments.
+              </p>
+            </div>
+          ) : distLoading ? (
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (<div key={i} className="h-10 rounded-lg bg-slate-100 animate-pulse" />))}
+            </div>
+          ) : distError ? (
+            <div className="py-6 text-center text-sm font-medium text-red-500">{distError}</div>
+          ) : distributors.length === 0 ? (
+            <div className="py-8 text-center bg-slate-50/50 rounded-xl border border-slate-100 border-dashed">
+              <p className="text-sm font-medium text-slate-500">No distributors mapped yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {distributors.map(d => (
+                <div key={d.id} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 bg-white">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-slate-800 truncate">{d.name}</p>
+                    <p className="text-xs text-slate-400 truncate">
+                      {[d.phone, d.dmsId ? `DMS: ${d.dmsId}` : null].filter(Boolean).join('  ·  ') || 'No contact info'}
+                    </p>
+                  </div>
+                  <span className="flex-shrink-0 w-2 h-2 rounded-full bg-emerald-400" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Manage actions */}
       {canManage && hasAnyManageAction && (
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -415,7 +522,7 @@ const UserDetail: React.FC = () => {
                   </svg>
                 }
                 title="Change role"
-                description={userData.role === 'RBL' ? 'Reassign subordinates and keep role' : 'Promote to the next level in the hierarchy'}
+                description={userData.role === 'RSM' ? 'Reassign subordinates and keep role' : 'Promote to the next level in the hierarchy'}
                 onClick={() => {}}
                 disabled={true}
               />
@@ -428,7 +535,7 @@ const UserDetail: React.FC = () => {
                   </svg>
                 }
                 title="Change reporting manager"
-                description={`Move this ${roleLabel} under a different ${ROLE_LABELS[userData.role === 'ASE' ? 'ASM' : userData.role === 'ASM' ? 'SM' : 'RBL'] || ''}. Subordinates move along.`}
+                description={`Move this ${roleLabel} under a different ${ROLE_LABELS[userData.role === 'CSO' ? 'ASE' : userData.role === 'ASE' ? 'ASM' : 'RSM'] || ''}. Subordinates move along.`}
                 onClick={() => {}}
                 disabled={true}
               />

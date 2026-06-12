@@ -58,13 +58,13 @@ const AdminLogin: React.FC = () => {
         <div className="absolute top-10 left-12 z-10 flex flex-col gap-2">
           <div className="bg-white/95 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
             <img 
-              src="/assets/branding/cdo-emblem.png" 
-              alt="Campa Destination Outlet" 
+              src="/assets/branding/signature-emblem.png" 
+              alt="Signature" 
               className="w-28 h-auto" 
             />
           </div>
-          <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] ml-1 mt-2">CDO Platform</span>
-          <p className="text-[9px] font-semibold text-white/40 mt-1 ml-1">Powered by Siteflow</p>
+          <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] ml-1 mt-2">Signature Platform</span>
+          <p className="text-[9px] font-semibold text-white/40 mt-1 ml-1">Powered by Signature Outlets</p>
         </div>
 
         {/* Hero Content */}
@@ -94,7 +94,7 @@ const AdminLogin: React.FC = () => {
         </div>
 
         {/* Copyright */}
-        <p className="absolute bottom-12 left-12 z-10 text-xs text-blue-200/25 font-semibold tracking-wide">© 2026 siteflow.tech · All rights reserved.</p>
+        <p className="absolute bottom-12 left-12 z-10 text-xs text-blue-200/25 font-semibold tracking-wide">© 2026 signatureoutlets.com · All rights reserved.</p>
 
         {/* Glow effects */}
         <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-amber-500 rounded-full blur-[150px] opacity-8"></div>
@@ -106,10 +106,10 @@ const AdminLogin: React.FC = () => {
         <div className="max-w-[480px] w-full relative z-10">
           <div className="bg-white border border-slate-100/80 rounded-3xl sm:rounded-[40px] p-8 sm:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)]">
 
-            {/* Logo — CDO primary, Siteflow secondary */}
+            {/* Logo — Signature primary, Siteflow secondary */}
             <div className="flex flex-col items-center justify-center mb-10 gap-3">
-              <img src="/assets/branding/cdo-emblem.png" alt="Campa Destination Outlet" className="w-24 h-auto" />
-              <p className="text-[10px] font-semibold text-slate-400">Powered by <span className="text-slate-500 font-bold">Siteflow</span></p>
+              <img src="/assets/branding/signature-emblem.png" alt="Signature" className="w-24 h-auto" />
+              <p className="text-[10px] font-semibold text-slate-400">Powered by <span className="text-slate-500 font-bold">Signature Outlets</span></p>
             </div>
 
             {/* Header */}

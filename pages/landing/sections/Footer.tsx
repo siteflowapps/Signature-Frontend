@@ -15,7 +15,7 @@ export const Footer: React.FC = () => (
         <div className="lg:col-span-1">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-sm" style={{ background: 'var(--lp-gradient-cta)' }}>S</div>
-            <span className="text-lg font-extrabold tracking-tight" style={{ color: 'var(--lp-text)' }}>Siteflow</span>
+            <span className="text-lg font-extrabold tracking-tight" style={{ color: 'var(--lp-text)' }}>Signature Outlets</span>
           </div>
           <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--lp-text-muted)' }}>
             Enterprise retail execution & campaign management platform.
@@ -46,10 +46,10 @@ export const Footer: React.FC = () => (
 
       <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ borderTop: '1px solid var(--lp-border)' }}>
         <p className="text-[10px] font-medium" style={{ color: 'var(--lp-text-muted)' }}>
-          © {new Date().getFullYear()} Siteflow Technologies Pvt. Ltd. All rights reserved.
+          © {new Date().getFullYear()} Signature Outlets. All rights reserved.
         </p>
         <p className="text-[10px] font-medium" style={{ color: 'var(--lp-text-muted)' }}>
-          Powered by <span className="font-bold" style={{ color: 'var(--lp-primary)' }}>siteflow.tech</span>
+          Powered by <span className="font-bold" style={{ color: 'var(--lp-primary)' }}>signatureoutlets.com</span>
         </p>
       </div>
     </div>

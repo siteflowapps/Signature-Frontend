@@ -1,15 +1,19 @@
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
+  NHQ_ADMIN = 'NHQ_ADMIN',
   BUSINESS_ADMIN = 'BUSINESS_ADMIN',
   BUSINESS_USER = 'BUSINESS_USER',
-  RBL = 'RBL',
-  SM = 'SM',
+  RSM = 'RSM',
   TRADE_MARKETING = 'TRADE_MARKETING',
+  MARKETING_MANAGER = 'MARKETING_MANAGER',
+  COOLER_TEAM = 'COOLER_TEAM',
   FINANCE = 'FINANCE',
   FINANCE_ADMIN = 'FINANCE_ADMIN',
+  FINANCE_MANAGER = 'FINANCE_MANAGER',
   ASM = 'ASM',
   ASE = 'ASE',
   CSO = 'CSO',
+  RETAILER = 'RETAILER',
   SALES_EXECUTIVE = 'SALES_EXECUTIVE',
   OUTLET = 'OUTLET',
   DISTRIBUTOR = 'DISTRIBUTOR',
@@ -577,6 +581,87 @@ export interface BusinessCreateResponse {
   timestamp: string;
 }
 
+// ── Asset / Cooler Request Types ──────────────────────────
+export type AssetRequestKind = 'COOLER' | 'MARKETING';
+
+export type AssetRequestStatus =
+  | 'REQUESTED'
+  | 'ASE_APPROVED'
+  | 'ASM_APPROVED'
+  | 'MARKETING_APPROVED'
+  | 'EXECUTED'
+  | 'COMPLIANCE_SUBMITTED'
+  | 'COMPLIANCE_OVERDUE'
+  | 'COMPLIANT'
+  | 'NON_COMPLIANT'
+  | 'REJECTED';
+
+export type CoolerSize = 'SIZE_300L' | 'SIZE_450L' | 'SIZE_550L' | 'SIZE_800L' | 'SIZE_950L';
+
+export type MarketingAssetType =
+  | 'NON_LIT_BOARD'
+  | 'GLOW_SIGN_BOARD'
+  | 'ACP_BOARD'
+  | 'BRANDED_TRAYS'
+  | 'WALL_BRANDING'
+  | 'END_CAP';
+
+export interface MarketingItem {
+  assetType: MarketingAssetType;
+  quantity?: number | null;
+  brands?: string[] | null;
+}
+
+export interface AssetRequest {
+  id: string;
+  outletId: string | null;
+  outletName: string | null;
+  kind: AssetRequestKind;
+  status: AssetRequestStatus;
+  details?: string | null;
+  coolerSize?: CoolerSize | null;
+  quantity?: number | null;
+  items?: MarketingItem[] | null;
+  raisedById?: string | null;
+  raisedByName?: string | null;
+  aseApprovedAt?: string | null;
+  asmApprovedAt?: string | null;
+  marketingApprovedAt?: string | null;
+  assignedAgent?: string | null;
+  scheduledDeploymentDate?: string | null;
+  executedById?: string | null;
+  executedAt?: string | null;
+  complianceDueDate?: string | null;
+  compliancePhotoUrl?: string | null;
+  complianceUploadedAt?: string | null;
+  complianceReviewedAt?: string | null;
+  complianceReviewRemarks?: string | null;
+  rejectionReason?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface AssetRequestListResponse {
+  success: boolean;
+  data: {
+    content: AssetRequest[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+  } | null;
+  error?: string;
+  timestamp: string;
+}
+
+export interface AssetRequestSingleResponse {
+  success: boolean;
+  data?: AssetRequest | null;
+  error?: string;
+  timestamp: string;
+}
+
 // ── Location Types ────────────────────────────────────────
 
 export interface Location {
@@ -589,6 +674,21 @@ export interface Location {
 export interface LocationListResponse {
   success: boolean;
   data: Location[];
+  timestamp: string;
+}
+
+export interface LocationBulkUploadResult {
+  totalRows: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: { row: number; message: string }[];
+}
+
+export interface LocationBulkUploadResponse {
+  success: boolean;
+  data: LocationBulkUploadResult | null;
+  error?: string;
   timestamp: string;
 }
 
@@ -656,6 +756,7 @@ export interface Distributor {
   gstNumber: string;
   email?: string;
   phone?: string;
+  dmsId?: string | null;
   status?: string;
   businessId?: string;
   locationId?: string;
@@ -675,6 +776,7 @@ export interface DistributorCreateRequest {
   locationId: string;
   email?: string;
   phone?: string;
+  dmsId?: string;
 }
 
 export interface DistributorListResponse {
