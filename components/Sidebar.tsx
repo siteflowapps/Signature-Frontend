@@ -15,11 +15,12 @@ const ADMIN_MENU = [
   { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
   { name: 'Users', icon: Icons.Search, path: '/users' },
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
+  { name: 'Locations', icon: Icons.Locations, path: '/manage-locations' },
   { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
   { name: 'Payouts', icon: Icons.Payouts, path: '/payouts' },
   { name: 'Reports', icon: Icons.Reports, path: '/reports' },
   { name: 'Stock Reports', icon: Icons.Reports, path: '/stock-reports' },
-  { name: 'ASE Lookup', icon: Icons.ASELookup, path: '/ase-lookup' },
+  { name: 'ASM Lookup', icon: Icons.ASELookup, path: '/asm-lookup' },
   { name: 'DM Lookup', icon: Icons.ASELookup, path: '/dm-lookup' },
 ];
 
@@ -27,10 +28,11 @@ const BUSINESS_ADMIN_MENU = [
   { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
   { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
+  { name: 'Locations', icon: Icons.Locations, path: '/manage-locations' },
   { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
   { name: 'Users', icon: Icons.Search, path: '/users' },
   { name: 'Stock Reports', icon: Icons.Reports, path: '/stock-reports' },
-  { name: 'ASE Lookup', icon: Icons.ASELookup, path: '/ase-lookup' },
+  { name: 'ASM Lookup', icon: Icons.ASELookup, path: '/asm-lookup' },
   { name: 'DM Lookup', icon: Icons.ASELookup, path: '/dm-lookup' },
 ];
 
@@ -57,13 +59,12 @@ const BUSINESS_USER_MENU = [
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
   { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
   { name: 'Locations', icon: Icons.Locations, path: '/locations' },
-  { name: 'ASE Lookup', icon: Icons.ASELookup, path: '/ase-lookup' },
   { name: 'Stock Reports', icon: Icons.Reports, path: '/stock-reports' },
   { name: 'Support Tickets', icon: Icons.Ticket, path: '/support-tickets' },
   { name: 'Users', icon: Icons.Search, path: '/users' },
 ];
 
-const RBL_MENU = [
+const RSM_MENU = [
   { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
   { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
@@ -72,13 +73,14 @@ const RBL_MENU = [
   { name: 'Team Members', icon: Icons.Search, path: '/users' },
 ];
 
-const SM_MENU = [
+const MARKETING_MANAGER_MENU = [
   { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
-  { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
-  { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
-  { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
-  { name: 'My Team', icon: Icons.Team, path: '/team' },
-  { name: 'Team Members', icon: Icons.Search, path: '/users' },
+  { name: 'Marketing Requests', icon: Icons.Marketing, path: '/marketing-requests' },
+];
+
+const COOLER_TEAM_MENU = [
+  { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
+  { name: 'Cooler Requests', icon: Icons.Cooler, path: '/cooler-requests' },
 ];
 
 const DISTRIBUTOR_MENU = [
@@ -124,16 +126,18 @@ const Sidebar: React.FC = () => {
   const getMenuItems = () => {
     if (user?.role === UserRole.SUPER_ADMIN) {
       return ADMIN_MENU;
-    } else if (user?.role === UserRole.BUSINESS_ADMIN) {
+    } else if (user?.role === UserRole.NHQ_ADMIN || user?.role === UserRole.BUSINESS_ADMIN) {
       return BUSINESS_ADMIN_MENU;
-    } else if (user?.role === UserRole.FINANCE_ADMIN) {
+    } else if (user?.role === UserRole.FINANCE_ADMIN || user?.role === UserRole.FINANCE_MANAGER) {
       return FINANCE_ADMIN_MENU;
     } else if (user?.role === UserRole.BUSINESS_USER) {
       return BUSINESS_USER_MENU;
-    } else if (user?.role === UserRole.RBL) {
-      return RBL_MENU;
-    } else if (user?.role === UserRole.SM) {
-      return SM_MENU;
+    } else if (user?.role === UserRole.MARKETING_MANAGER) {
+      return MARKETING_MANAGER_MENU;
+    } else if (user?.role === UserRole.COOLER_TEAM) {
+      return COOLER_TEAM_MENU;
+    } else if (user?.role === UserRole.RSM) {
+      return RSM_MENU;
     } else if (user?.role === UserRole.DISTRIBUTOR) {
       return DISTRIBUTOR_MENU;
     } else if (user?.role === UserRole.DISTRIBUTOR_MANAGER) {
@@ -158,16 +162,22 @@ const Sidebar: React.FC = () => {
     switch (role) {
       case 'SUPER_ADMIN':
         return 'Super Admin';
+      case 'NHQ_ADMIN':
+        return 'NHQ Admin';
       case 'BUSINESS_ADMIN':
         return 'Business Admin';
       case 'BUSINESS_USER':
         return 'Business User';
       case 'FINANCE_ADMIN':
         return 'Finance Admin';
-      case 'RBL':
-        return 'RBL';
-      case 'SM':
-        return 'Sales Manager';
+      case 'FINANCE_MANAGER':
+        return 'Finance Manager';
+      case 'MARKETING_MANAGER':
+        return 'Marketing Manager';
+      case 'COOLER_TEAM':
+        return 'Cooler Team';
+      case 'RSM':
+        return 'Regional Sales Manager';
       case 'DISTRIBUTOR':
         return 'Distributor';
       case 'DISTRIBUTOR_MANAGER':
@@ -188,10 +198,10 @@ const Sidebar: React.FC = () => {
       {/* Logo */}
       <div className="px-5 pt-6 pb-4">
         <div className="flex items-center gap-3 mb-2">
-          <img src="/assets/branding/cdo-emblem.png" alt="CDO" className="w-10 h-10 object-contain" />
+          <img src="/assets/branding/signature-emblem.png" alt="Signature" className="w-10 h-10 object-contain" />
           <div className="flex flex-col">
-            <h1 className="text-[15px] font-black tracking-tighter text-slate-900 leading-none">Siteflow CDO</h1>
-            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-1">Powered by Siteflow</p>
+            <h1 className="text-[15px] font-black tracking-tighter text-slate-900 leading-none">Signature Outlets</h1>
+            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-1">Powered by Signature Outlets</p>
           </div>
         </div>
       </div>

@@ -28,7 +28,7 @@ const OnboardingTab: React.FC<OnboardingTabProps> = ({
       <div className="space-y-8">
         <div className="flex items-center gap-4">
           <h3 className="text-2xl font-black text-slate-900 tracking-tight">Outlet Onboarding</h3>
-          <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${isCompleted ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-800'}`}>{isCompleted ? 'CDO Complete — 4 of 4' : `Stage ${completedCount + 1} of 4`}</span>
+          <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${isCompleted ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-800'}`}>{isCompleted ? 'Signature Complete — 4 of 4' : `Stage ${completedCount + 1} of 4`}</span>
         </div>
         <div className="relative">
           {outletTasks.map((task, index) => {
@@ -45,7 +45,7 @@ const OnboardingTab: React.FC<OnboardingTabProps> = ({
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{task.phase === 1 ? 'Instant Enrollment by Sales Executive' : 'Verified by Sales Executive'}</p>
                       </div>
                       {task.phase === 1 && isCompleted && <span className="ml-auto text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 uppercase tracking-widest">Enrolled</span>}
-                      {task.phase === 2 && isCompleted && <span className="ml-auto text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 uppercase tracking-widest">CDO Complete</span>}
+                      {task.phase === 2 && isCompleted && <span className="ml-auto text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 uppercase tracking-widest">Signature Complete</span>}
                     </div>
                   </div>
                 )}
@@ -102,7 +102,7 @@ const OnboardingTab: React.FC<OnboardingTabProps> = ({
         </div>
       </div>
 
-      {/* Before vs After CDO */}
+      {/* Before vs After Signature */}
       {id && (() => {
         const beforePhotos = realOnboardingPhotos.length > 0 ? realOnboardingPhotos : (ONBOARDING_PHOTOS[id] || []);
         const afterPhotos = realVerificationPhotos.length > 0 ? realVerificationPhotos : (VERIFICATION_PHOTOS[id] || []);
@@ -111,13 +111,13 @@ const OnboardingTab: React.FC<OnboardingTabProps> = ({
         return (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Before & After CDO</h3>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Before & After Signature</h3>
               <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase bg-emerald-50 text-emerald-700">{isCompleted ? 'Transformation' : 'In Progress'}</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {beforePhotos.length > 0 && (
                 <div className="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm">
-                  <div className="px-6 py-4 bg-slate-50 border-b border-slate-100"><p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Before CDO — Onboarding Photos</p></div>
+                  <div className="px-6 py-4 bg-slate-50 border-b border-slate-100"><p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Before Signature — Onboarding Photos</p></div>
                   <div className="p-5 grid grid-cols-2 gap-3">
                     {beforePhotos.map((photo, idx) => (
                       <button key={idx} onClick={() => openLightbox(idx, beforePhotos)} className="group relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-slate-100 hover:border-indigo-300 transition-all">
@@ -132,7 +132,7 @@ const OnboardingTab: React.FC<OnboardingTabProps> = ({
               )}
               {afterPhotos.length > 0 && (
                 <div className="bg-white rounded-[32px] border border-emerald-100 overflow-hidden shadow-sm">
-                  <div className="px-6 py-4 bg-emerald-50 border-b border-emerald-100"><p className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em]">After CDO — Verification Photos</p></div>
+                  <div className="px-6 py-4 bg-emerald-50 border-b border-emerald-100"><p className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em]">After Signature — Verification Photos</p></div>
                   <div className="p-5 grid grid-cols-2 gap-3">
                     {afterPhotos.map((photo, idx) => (
                       <button key={idx} onClick={() => openLightbox(idx, afterPhotos)} className="group relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-emerald-100 hover:border-emerald-300 transition-all">

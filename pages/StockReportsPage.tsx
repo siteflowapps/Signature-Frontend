@@ -78,7 +78,7 @@ export const StockReportsPage: React.FC = () => {
           apiService.users.getByRole(UserRole.DISTRIBUTOR_MANAGER),
           apiService.users.getByRole(UserRole.ASE),
           apiService.users.getByRole(UserRole.ASM),
-          apiService.users.getByRole(UserRole.SM),
+          apiService.users.getByRole(UserRole.RSM),
           apiService.locations.getAll()
         ]);
         if (dmsRes.success) setDms(dmsRes.data);
@@ -251,7 +251,7 @@ export const StockReportsPage: React.FC = () => {
           onChange={(e) => { setSelectedSmId(e.target.value); setCurrentPage(0); }}
           className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
         >
-          <option value="">All SMs</option>
+          <option value="">All RSMs</option>
           {sms.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
         </select>
 

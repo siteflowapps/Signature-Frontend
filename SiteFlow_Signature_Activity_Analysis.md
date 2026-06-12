@@ -1,7 +1,7 @@
-# SiteFlow CDO — Role Activity & Hosting Cost Analysis
+# SiteFlow Signature — Role Activity & Hosting Cost Analysis
 
 **Generated:** 2026-03-06
-**Application:** SiteFlow CDO (Commerce Digital Operations)
+**Application:** SiteFlow Signature (Commerce Digital Operations)
 **Tech Stack:** React + Vite + Axios | Backend: REST API (Spring Boot)
 
 ---
@@ -29,7 +29,7 @@
 - **Menu:** Dashboard, Businesses, Outlets, Users, Distributors, Slabs, Payouts, Reports
 
 ### BUSINESS_ADMIN
-- **Function:** Business operations lead (CDO Program)
+- **Function:** Business operations lead (Signature Program)
 - **Write Actions:** Create distributors, create field users (BUSINESS_USER, FINANCE_ADMIN, RBL, SM, ASM, ASE)
 - **View Access:** Outlets, slabs, invoice pipeline, disbursements
 - **Menu:** Dashboard, Outlets, Distributors, Slabs, Users
@@ -350,7 +350,7 @@ Phase 2: Verification (Days 7-30)
     └── SHELF_VISIBILITY
     |
     v
-    ASM/Auditor Verifies -> CDO Complete
+    ASM/Auditor Verifies -> Signature Complete
 ```
 
 **Total photos per outlet onboarding: 12 (one-time)**
@@ -417,4 +417,4 @@ Phase 2: Verification (Days 7-30)
 
 ---
 
-*This analysis is based on the SiteFlow CDO frontend codebase as of 2026-03-06. Backend API behavior may differ from frontend assumptions.*
+*This analysis is based on the SiteFlow Signature frontend codebase as of 2026-03-06. Backend API behavior may differ from frontend assumptions.*

@@ -56,8 +56,8 @@ export const BrandPanel: React.FC = () => (
     {/* Logo */}
     <div className="relative z-10 flex flex-col gap-1.5" style={{animation: 'fadeInUp 0.5s ease-out both'}}>
       <img src="/assets/branding/reliance-logo.png" alt="Reliance Consumer Products Limited" className="w-28 h-auto rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.08)]" />
-      <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] ml-1 mt-2">CDO Platform</span>
-      <p className="text-[9px] font-semibold text-white/40 ml-1">Powered by Siteflow.tech</p>
+      <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] ml-1 mt-2">Signature Platform</span>
+      <p className="text-[9px] font-semibold text-white/40 ml-1">Powered by Signature Outlets</p>
     </div>
 
     {/* Hero Content */}
@@ -95,6 +95,6 @@ export const BrandPanel: React.FC = () => (
     </div>
 
     {/* Copyright (desktop only) */}
-    <p className="hidden lg:block relative z-10 text-[10px] xl:text-xs text-blue-200/25 font-semibold tracking-wide mt-6 xl:mt-0">© 2026 siteflow.tech · All rights reserved.</p>
+    <p className="hidden lg:block relative z-10 text-[10px] xl:text-xs text-blue-200/25 font-semibold tracking-wide mt-6 xl:mt-0">© 2026 signatureoutlets.com · All rights reserved.</p>
   </div>
 );

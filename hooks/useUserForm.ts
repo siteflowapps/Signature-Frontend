@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { apiService } from '../network/apiService';
 import { UserRole } from '../types';
 import { ROLE_CONFIG, getAvailableRoles } from '../utils/roleConfig';
+import { queryKeys } from './queries/queryKeys';
 import { getErrorMessage } from '../utils/errorUtils';
 
 export interface UserFormData {
@@ -33,6 +35,7 @@ const INITIAL_FORM_DATA: UserFormData = {
  */
 export const useUserForm = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { showToast } = useToast();
 
@@ -41,7 +44,7 @@ export const useUserForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const isAdmin = user?.role === UserRole.SUPER_ADMIN;
-  const isBusinessAdmin = user?.role === UserRole.BUSINESS_ADMIN;
+  const isBusinessAdmin = user?.role === UserRole.NHQ_ADMIN || user?.role === UserRole.BUSINESS_ADMIN;
   const businessId = isBusinessAdmin ? user?.businessId : formData.businessId;
 
   const availableRoles = getAvailableRoles(isAdmin, isBusinessAdmin);
@@ -66,6 +69,14 @@ export const useUserForm = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isFormDirty]);
+
+  // Ensure the selected role is always a valid, assignable role for the current user.
+  // (Default 'BUSINESS_USER' is no longer assignable, so fall back to the first available role.)
+  useEffect(() => {
+    if (availableRoles.length && !availableRoles.includes(formData.role)) {
+      setFormData(prev => ({ ...prev, role: availableRoles[0] }));
+    }
+  }, [availableRoles, formData.role]);
 
   // Clear parentUserId when role changes
   useEffect(() => {
@@ -108,10 +119,6 @@ export const useUserForm = () => {
       return `Please select a ${parentLabel}`;
     }
 
-    if (formData.role === 'ASE' && (!formData.distributorIds || formData.distributorIds.length === 0)) {
-      return 'Please select at least one Distributor for ASE user';
-    }
-
     return null;
   };
 
@@ -135,15 +142,23 @@ export const useUserForm = () => {
         businessId: businessId || '',
         locationId: formData.locationId || undefined,
         parentUserId: parentRole ? formData.parentUserId : undefined,
-        distributorIds: formData.role === 'ASE' ? formData.distributorIds : undefined,
       };
 
       const response = await apiService.users.create(payload);
 
       if (response.success) {
+        // ASM distributors aren't linked on create — map them via PUT /users/{id}/distributors.
+        if (formData.role === 'ASM' && formData.distributorIds.length > 0 && response.data?.id) {
+          const mapRes = await apiService.users.setDistributors(response.data.id, formData.distributorIds);
+          if (!mapRes.success) {
+            showToast('User created, but mapping distributors failed. You can map them from ASM Lookup.', 'error', 5000);
+          }
+        }
         setIsSuccess(true);
         showToast(`User "${formData.name}" added successfully!`, 'success', 3000);
         setIsSubmitting(false);
+        // Refresh the users table so the new user shows up immediately
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
         setTimeout(() => navigate('/users'), 2000);
       } else {
         showToast(response.error || 'Failed to create user', 'error', 4000);

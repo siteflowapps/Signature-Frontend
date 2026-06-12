@@ -6,18 +6,24 @@ const getBaseUrl = () => {
   
   const hostname = window.location.hostname;
   
-  if (hostname === 'qa.cdo.siteflow.tech') {
-    return 'https://qa.cdo.siteflow.tech/api/v1/';
-  } else if (hostname === 'uat.cdo.siteflow.tech') {
-    return 'https://uat.cdo.siteflow.tech/api/v1/';
-  } else if (hostname === 'cdo.siteflow.tech') {
-    return 'https://cdo.siteflow.tech/api/v1/';
+  if (hostname === 'qa.signature.siteflow.tech') {
+    return 'https://qa.signature.siteflow.tech/api/v1/';
+  } else if (hostname === 'uat.signature.siteflow.tech') {
+    return 'https://uat.signature.siteflow.tech/api/v1/';
+  } else if (hostname === 'signature.siteflow.tech') {
+    return 'https://signature.siteflow.tech/api/v1/';
   }
   
   return '/api/v1/';
 };
 
 const BASE_URL = getBaseUrl();
+
+// Generate a unique idempotency key per request, e.g. idem-1781012512233-7pxkk9
+const generateIdempotencyKey = (): string => {
+  const random = Math.random().toString(36).slice(2, 8);
+  return `idem-${Date.now()}-${random}`;
+};
 
 // Create the axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -53,6 +59,9 @@ apiClient.interceptors.request.use(
     const token = getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (config.headers) {
+      config.headers['Idempotency-Key'] = generateIdempotencyKey();
     }
     return config;
   },
@@ -109,6 +118,8 @@ apiClient.interceptors.response.use(
         // Important: Call axios directly to avoid interceptor loops
         const { data } = await axios.post(`${BASE_URL}auth/refresh`, {
           refreshToken, // Adjust body payload based on the actual backend expectation if different
+        }, {
+          headers: { 'Idempotency-Key': generateIdempotencyKey() },
         });
 
         const newAccessToken = data?.data?.accessToken;

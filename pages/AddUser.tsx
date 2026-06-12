@@ -150,8 +150,8 @@ const AddUser: React.FC = () => {
             </p>
           </div>
 
-          {/* Conditional Distributor Selection for ASE */}
-          {formData.role === 'ASE' && (
+          {/* Conditional Distributor Selection for ASM */}
+          {formData.role === 'ASM' && (
             <div className="animate-slide-in">
               <DistributorMultiSelect
                 selectedIds={formData.distributorIds}

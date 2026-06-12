@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv *)",
+      "Bash(xargs sed -i '' 's/cdo-emblem\\\\.png/signature-emblem.png/g')"
+    ]
+  }
+}

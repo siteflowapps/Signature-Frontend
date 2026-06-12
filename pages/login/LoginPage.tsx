@@ -114,8 +114,8 @@ const LoginPage: React.FC = () => {
 
             {/* Logo */}
             <div className="flex flex-col items-center justify-center mb-10 gap-3">
-              <img src="/assets/branding/cdo-emblem.png" alt="Campa Destination Outlet" className="w-28 h-auto" />
-              <p className="text-[10px] font-semibold text-slate-400">Powered by <span className="text-slate-500 font-bold">Siteflow</span></p>
+              <img src="/assets/branding/signature-emblem.png" alt="Signature" className="w-28 h-auto" />
+              <p className="text-[10px] font-semibold text-slate-400">Powered by <span className="text-slate-500 font-bold">Signature Outlets</span></p>
             </div>
 
             {/* Dynamic Header */}
@@ -162,13 +162,11 @@ const LoginPage: React.FC = () => {
                 <p className="text-[8px] font-bold text-slate-300 uppercase tracking-[0.15em] text-center mb-4">Dev Profiles</p>
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
-                    { label: 'B-Admin', phone: '9999999990' },
-                    { label: 'B-User', phone: '9999999997' },
-                    { label: 'Fin-Admin', phone: '9999999991' },
-                    { label: 'RBL', phone: '9999999992' },
-                    { label: 'SM', phone: '9999999993' },
-                    { label: 'Distributor', phone: '99999 99998' },
-                    { label: 'DM', phone: '99999 99996' },
+                    { label: 'NHQ Admin', phone: '9876543210' },
+                    { label: 'Fin Mgr', phone: '9876543211' },
+                    { label: 'Mktg Mgr', phone: '9876543212' },
+                    { label: 'Cooler', phone: '9876543213' },
+                    { label: 'RSM', phone: '9876543214' },
                   ].map((p, i) => (
                     <button key={i} type="button"
                       onClick={() => { setPhone(p.phone.replace(/\s+/g, '')); setOtpStep('PHONE'); setError(''); }}

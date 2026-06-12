@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { AuthResponse, LoginRequest, UserMeResponse, BusinessCreateRequest, BusinessCreateResponse, BusinessListResponse, LocationListResponse, UserListResponse, SystemUser, CreateUserRequest, CreateUserResponse, Distributor, DistributorListResponse, DistributorCreateRequest, DistributorCreateResponse, SlabListResponse, Outlet, OutletListResponse, InvoiceListResponse, InvoiceSingleResponse, Invoice, BulkApproveResponse, PayoutEstimateResponse, PayoutCycleResponse, PayoutListResponse, PayoutSingleResponse, HierarchyRelation, HierarchyMember, UserHierarchy, DashboardStatsResponse, SupportTicket, StockItemResponse, StockReportSubmitRequest, StockReportSubmitResponse, StockReportListResponse } from '../types';
+import { AuthResponse, LoginRequest, UserMeResponse, BusinessCreateRequest, BusinessCreateResponse, BusinessListResponse, LocationListResponse, UserListResponse, SystemUser, CreateUserRequest, CreateUserResponse, Distributor, DistributorListResponse, DistributorCreateRequest, DistributorCreateResponse, SlabListResponse, Outlet, OutletListResponse, InvoiceListResponse, InvoiceSingleResponse, Invoice, BulkApproveResponse, PayoutEstimateResponse, PayoutCycleResponse, PayoutListResponse, PayoutSingleResponse, HierarchyRelation, HierarchyMember, UserHierarchy, DashboardStatsResponse, SupportTicket, StockItemResponse, StockReportSubmitRequest, StockReportSubmitResponse, StockReportListResponse, LocationBulkUploadResponse, AssetRequestKind, AssetRequestStatus, AssetRequestListResponse, AssetRequestSingleResponse } from '../types';
 
 export const apiService = {
   /**
@@ -68,6 +68,56 @@ export const apiService = {
       const response = await apiClient.get<LocationListResponse>(`/locations?pincode=${encodeURIComponent(pincode)}`);
       return response.data;
     },
+    /** Add locations in bulk via an Excel/CSV file (columns: pincode, city, state). NHQ_ADMIN scoped. */
+    bulkUpload: async (file: File): Promise<LocationBulkUploadResponse> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await apiClient.post<LocationBulkUploadResponse>('/locations/bulk-upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    },
+  },
+
+  /**
+   * Asset / Cooler Request Endpoints (Cooler Team deployment & compliance workflow)
+   */
+  assetRequests: {
+    list: async (params: { kind?: AssetRequestKind; status?: AssetRequestStatus; outletId?: string; page?: number; size?: number } = {}): Promise<AssetRequestListResponse> => {
+      const q = new URLSearchParams();
+      if (params.kind) q.set('kind', params.kind);
+      if (params.status) q.set('status', params.status);
+      if (params.outletId) q.set('outletId', params.outletId);
+      q.set('page', String(params.page ?? 0));
+      q.set('size', String(params.size ?? 20));
+      q.set('sort', 'updatedAt,desc');
+      const response = await apiClient.get<AssetRequestListResponse>(`/asset-requests?${q.toString()}`);
+      return response.data;
+    },
+    get: async (id: string): Promise<AssetRequestSingleResponse> => {
+      const response = await apiClient.get<AssetRequestSingleResponse>(`/asset-requests/${id}`);
+      return response.data;
+    },
+    /** Approve / reject a request in the approval chain (Marketing Manager gives final marketing approval). */
+    decide: async (id: string, payload: { action: 'APPROVE' | 'REJECT'; reason?: string }): Promise<AssetRequestSingleResponse> => {
+      const response = await apiClient.post<AssetRequestSingleResponse>(`/asset-requests/${id}/decision`, payload);
+      return response.data;
+    },
+    /** Cooler Team: assign an installation agent + scheduled deployment date (request must be ASM_APPROVED). */
+    assign: async (id: string, payload: { assignedAgent: string; scheduledDeploymentDate: string }): Promise<AssetRequestSingleResponse> => {
+      const response = await apiClient.post<AssetRequestSingleResponse>(`/asset-requests/${id}/assign`, payload);
+      return response.data;
+    },
+    /** Cooler Team: mark the cooler installed/executed (starts the compliance window). */
+    execute: async (id: string): Promise<AssetRequestSingleResponse> => {
+      const response = await apiClient.post<AssetRequestSingleResponse>(`/asset-requests/${id}/execute`, {});
+      return response.data;
+    },
+    /** Cooler Team: review the uploaded compliance photo (COMPLIANT / NON_COMPLIANT). */
+    reviewCompliance: async (id: string, payload: { verdict: 'COMPLIANT' | 'NON_COMPLIANT'; remarks?: string }): Promise<AssetRequestSingleResponse> => {
+      const response = await apiClient.post<AssetRequestSingleResponse>(`/asset-requests/${id}/compliance-review`, payload);
+      return response.data;
+    },
   },
 
   /**
@@ -79,8 +129,15 @@ export const apiService = {
       return response.data;
     },
     getByRole: async (role: string, page = 0, size = 500): Promise<{ success: boolean; data: SystemUser[]; timestamp: string }> => {
-      const response = await apiClient.get<{ success: boolean; data: SystemUser[]; timestamp: string }>(`/users/by-role/${role}?page=${page}&size=${size}`);
-      return response.data;
+      // Backend has no /users/by-role route — filter via GET /users?roles=<role> (paged response).
+      const response = await apiClient.get<{ success: boolean; data: { content: SystemUser[] } | null; timestamp: string }>(
+        `/users?roles=${encodeURIComponent(role)}&page=${page}&size=${size}`,
+      );
+      return {
+        success: response.data.success,
+        data: response.data.data?.content ?? [],
+        timestamp: response.data.timestamp,
+      };
     },
     create: async (data: CreateUserRequest): Promise<CreateUserResponse> => {
       const response = await apiClient.post<CreateUserResponse>('/users', data);
@@ -98,13 +155,28 @@ export const apiService = {
       const response = await apiClient.get<{ success: boolean; data: { id: string; name: string }[]; timestamp: string }>(`/users/${userId}/distributors`);
       return response.data;
     },
-    addDistributors: async (userId: string, distributorIds: string[]): Promise<{ success: boolean; data: { id: string; name: string }[]; timestamp: string }> => {
-      const response = await apiClient.post<{ success: boolean; data: { id: string; name: string }[]; timestamp: string }>(`/users/${userId}/distributors`, { distributorIds });
+    /** Replace a user's full distributor set (PUT /users/{id}/distributors). Works for ASE and ASM. */
+    setDistributors: async (userId: string, distributorIds: string[]): Promise<{ success: boolean; data?: SystemUser | null; error?: string; timestamp: string }> => {
+      const response = await apiClient.put<{ success: boolean; data?: SystemUser | null; error?: string; timestamp: string }>(`/users/${userId}/distributors`, { distributorIds });
       return response.data;
     },
+    // The backend only exposes PUT (full-set replace), so add/remove are expressed as a merge/filter
+    // over the current set, then a single setDistributors call.
+    addDistributors: async (userId: string, distributorIds: string[]): Promise<{ success: boolean; data: { id: string; name: string }[]; timestamp: string }> => {
+      const current = await apiService.users.getDistributorsByUser(userId);
+      const currentIds = current.success ? current.data.map(d => d.id) : [];
+      const desired = Array.from(new Set([...currentIds, ...distributorIds]));
+      const put = await apiService.users.setDistributors(userId, desired);
+      const fresh = await apiService.users.getDistributorsByUser(userId);
+      return { success: put.success && fresh.success, data: fresh.success ? fresh.data : [], timestamp: put.timestamp };
+    },
     removeDistributors: async (userId: string, distributorIds: string[]): Promise<{ success: boolean; timestamp: string }> => {
-      const response = await apiClient.delete<{ success: boolean; timestamp: string }>(`/users/${userId}/distributors`, { data: { distributorIds } });
-      return response.data;
+      const current = await apiService.users.getDistributorsByUser(userId);
+      const currentIds = current.success ? current.data.map(d => d.id) : [];
+      const toRemove = new Set(distributorIds);
+      const desired = currentIds.filter(id => !toRemove.has(id));
+      const put = await apiService.users.setDistributors(userId, desired);
+      return { success: put.success, timestamp: put.timestamp };
     },
     search: async (query: string, page = 0, size = 20): Promise<UserListResponse> => {
       const response = await apiClient.get<UserListResponse>(`/users?search=${encodeURIComponent(query)}&page=${page}&size=${size}&sort=createdAt,desc`);
@@ -201,7 +273,19 @@ export const apiService = {
       return response.data;
     },
     create: async (data: DistributorCreateRequest): Promise<DistributorCreateResponse> => {
-      const response = await apiClient.post<DistributorCreateResponse>('/distributors', data);
+      // Backend create binds a Distributor entity: business/location must be nested {id} refs,
+      // not flat businessId/locationId. (NHQ_ADMIN's business is taken from the token server-side.)
+      const payload = {
+        name: data.name,
+        address: data.address,
+        gstNumber: data.gstNumber,
+        email: data.email,
+        phone: data.phone,
+        dmsId: data.dmsId,
+        ...(data.businessId ? { business: { id: data.businessId } } : {}),
+        ...(data.locationId ? { location: { id: data.locationId } } : {}),
+      };
+      const response = await apiClient.post<DistributorCreateResponse>('/distributors', payload);
       return response.data;
     },
     updateStatus: async (distributorId: string, status: string): Promise<{ success: boolean; data?: Distributor | null; error?: string; errorCode?: string; timestamp: string }> => {
