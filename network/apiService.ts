@@ -103,8 +103,8 @@ export const apiService = {
       const response = await apiClient.post<AssetRequestSingleResponse>(`/asset-requests/${id}/decision`, payload);
       return response.data;
     },
-    /** Cooler Team: assign an installation agent + scheduled deployment date (request must be ASM_APPROVED). */
-    assign: async (id: string, payload: { assignedAgent: string; scheduledDeploymentDate: string }): Promise<AssetRequestSingleResponse> => {
+    /** Assign an installation agent (mandatory) + optional scheduled deployment date. */
+    assign: async (id: string, payload: { assignedAgent: string; scheduledDeploymentDate?: string }): Promise<AssetRequestSingleResponse> => {
       const response = await apiClient.post<AssetRequestSingleResponse>(`/asset-requests/${id}/assign`, payload);
       return response.data;
     },
