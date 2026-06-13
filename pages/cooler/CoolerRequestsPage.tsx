@@ -8,12 +8,12 @@ import { AssetRequest, AssetRequestStatus } from '../../types';
 import { STATUS_META, statusBadge, statusLabel, coolerSizeLabel, formatDate, isOverdue } from './coolerMeta';
 
 const TABS: { key: AssetRequestStatus | 'ALL'; label: string }[] = [
+  { key: 'ALL', label: 'All' },
   { key: 'ASM_APPROVED', label: 'To Deploy' },
   { key: 'EXECUTED', label: 'Awaiting Photo' },
   { key: 'COMPLIANCE_OVERDUE', label: 'Overdue' },
   { key: 'COMPLIANCE_SUBMITTED', label: 'To Review' },
   { key: 'COMPLIANT', label: 'Compliant' },
-  { key: 'ALL', label: 'All' },
 ];
 
 const PAGE_SIZE = 20;
@@ -33,24 +33,11 @@ const RequestDetailPanel: React.FC<{
   onUpdated: (updated: AssetRequest | null) => void | Promise<void>;
 }> = ({ request, onClose, onUpdated }) => {
   const { showToast } = useToast();
-  const [agent, setAgent] = useState(request.assignedAgent || '');
-  const [schedule, setSchedule] = useState(request.scheduledDeploymentDate || '');
   const [verdict, setVerdict] = useState<'COMPLIANT' | 'NON_COMPLIANT'>('COMPLIANT');
   const [remarks, setRemarks] = useState('');
-  const [busy, setBusy] = useState<null | 'assign' | 'execute' | 'review'>(null);
+  const [busy, setBusy] = useState<null | 'execute' | 'review'>(null);
 
   const overdue = request.status === 'EXECUTED' && isOverdue(request.complianceDueDate);
-
-  const handleAssign = async () => {
-    if (!agent.trim() || !schedule) { showToast('Enter an agent and a deployment date.', 'error'); return; }
-    setBusy('assign');
-    try {
-      const res = await apiService.assetRequests.assign(request.id, { assignedAgent: agent.trim(), scheduledDeploymentDate: schedule });
-      if (res.success) { showToast('Installation assigned.', 'success'); await onUpdated(res.data ?? null); }
-      else showToast(res.error || 'Failed to assign.', 'error');
-    } catch (err) { showToast(getErrorMessage(err), 'error'); }
-    finally { setBusy(null); }
-  };
 
   const handleExecute = async () => {
     setBusy('execute');
@@ -98,30 +85,10 @@ const RequestDetailPanel: React.FC<{
 
         {/* Contextual action */}
         {request.status === 'ASM_APPROVED' && (
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/60 space-y-3">
-              <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider">Assign installation</h4>
-              <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-slate-500">Installation agent</label>
-                <input value={agent} onChange={e => setAgent(e.target.value)} placeholder="Agent name"
-                  className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 focus:outline-none" />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-slate-500">Scheduled deployment date</label>
-                <input type="date" value={schedule} onChange={e => setSchedule(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 focus:outline-none" />
-              </div>
-              <button onClick={handleAssign} disabled={busy !== null}
-                className="w-full py-2.5 text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-xl transition-colors disabled:opacity-50">
-                {busy === 'assign' ? 'Saving…' : 'Save assignment'}
-              </button>
-            </div>
-            <button onClick={handleExecute} disabled={busy !== null}
-              className="w-full py-3 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-500/25 transition-colors disabled:opacity-50">
-              {busy === 'execute' ? 'Marking…' : 'Mark as Installed'}
-            </button>
-            {!request.assignedAgent && <p className="text-[11px] text-slate-400 text-center">Tip: assign an agent before marking installed.</p>}
-          </div>
+          <button onClick={handleExecute} disabled={busy !== null}
+            className="w-full py-3 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-500/25 transition-colors disabled:opacity-50">
+            {busy === 'execute' ? 'Marking…' : 'Mark as Installed'}
+          </button>
         )}
 
         {(request.status === 'EXECUTED' || request.status === 'COMPLIANCE_OVERDUE') && (
@@ -184,9 +151,9 @@ const RequestDetailPanel: React.FC<{
 const CoolerRequestsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initialStatus = (searchParams.get('status') as AssetRequestStatus | null) || 'ASM_APPROVED';
+  const initialStatus = (searchParams.get('status') as AssetRequestStatus | null) || 'ALL';
   const [activeTab, setActiveTab] = useState<AssetRequestStatus | 'ALL'>(
-    TABS.some(t => t.key === initialStatus) ? initialStatus : 'ASM_APPROVED',
+    TABS.some(t => t.key === initialStatus) ? initialStatus : 'ALL',
   );
 
   const [rows, setRows] = useState<AssetRequest[]>([]);
@@ -342,7 +309,7 @@ const CoolerRequestsPage: React.FC = () => {
                       </td>
                       <td className={`px-5 py-3 ${overdue ? 'text-red-600 font-semibold' : 'text-slate-600'}`}>
                         {r.status === 'ASM_APPROVED'
-                          ? (r.scheduledDeploymentDate ? `📅 ${formatDate(r.scheduledDeploymentDate)}` : 'Not scheduled')
+                          ? (r.scheduledDeploymentDate ? `📅 ${formatDate(r.scheduledDeploymentDate)}` : '—')
                           : (r.complianceDueDate ? `Due ${formatDate(r.complianceDueDate)}` : '—')}
                       </td>
                       <td className="px-5 py-3 text-slate-500">{r.raisedByName || '—'}</td>
@@ -358,14 +325,27 @@ const CoolerRequestsPage: React.FC = () => {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && !loading && (
-          <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-medium">Page {page + 1} of {totalPages}</span>
-            <div className="flex items-center gap-2">
-              <button disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))}
-                className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50">Prev</button>
-              <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
-                className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50">Next</button>
+        {!loading && totalElements > 0 && (
+          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between">
+            <div className="text-xs font-semibold text-slate-500">
+              Showing <span className="text-slate-700">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalElements)}</span> of <span className="text-slate-700">{totalElements}</span> requests
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setPage(prev => Math.max(prev - 1, 0))} disabled={page === 0 || loading}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 border border-slate-200 hover:bg-white hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all">Previous</button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) pageNum = i;
+                else if (page < 3) pageNum = i;
+                else if (page > totalPages - 4) pageNum = totalPages - 5 + i;
+                else pageNum = page - 2 + i;
+                return (
+                  <button key={pageNum} onClick={() => setPage(pageNum)} disabled={loading}
+                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${pageNum === page ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:text-slate-900'}`}>{pageNum + 1}</button>
+                );
+              })}
+              <button onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))} disabled={page >= totalPages - 1 || loading}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 border border-slate-200 hover:bg-white hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all">Next</button>
             </div>
           </div>
         )}
