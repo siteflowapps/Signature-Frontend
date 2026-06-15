@@ -677,7 +677,7 @@ export interface LocationListResponse {
   timestamp: string;
 }
 
-export interface LocationBulkUploadResult {
+export interface BulkImportResult {
   totalRows: number;
   created: number;
   updated: number;
@@ -685,12 +685,16 @@ export interface LocationBulkUploadResult {
   errors: { row: number; message: string }[];
 }
 
-export interface LocationBulkUploadResponse {
+export interface BulkImportResponse {
   success: boolean;
-  data: LocationBulkUploadResult | null;
+  data: BulkImportResult | null;
   error?: string;
   timestamp: string;
 }
+
+// Locations bulk-upload shares the same backend BulkUploadResponse shape.
+export type LocationBulkUploadResult = BulkImportResult;
+export type LocationBulkUploadResponse = BulkImportResponse;
 
 // ── User Management Types ────────────────────────────────────
 

@@ -1,5 +1,15 @@
 import apiClient from './apiClient';
-import { AuthResponse, LoginRequest, UserMeResponse, BusinessCreateRequest, BusinessCreateResponse, BusinessListResponse, LocationListResponse, UserListResponse, SystemUser, CreateUserRequest, CreateUserResponse, Distributor, DistributorListResponse, DistributorCreateRequest, DistributorCreateResponse, SlabListResponse, Outlet, OutletListResponse, InvoiceListResponse, InvoiceSingleResponse, Invoice, BulkApproveResponse, PayoutEstimateResponse, PayoutCycleResponse, PayoutListResponse, PayoutSingleResponse, HierarchyRelation, HierarchyMember, UserHierarchy, DashboardStatsResponse, SupportTicket, StockItemResponse, StockReportSubmitRequest, StockReportSubmitResponse, StockReportListResponse, LocationBulkUploadResponse, AssetRequestKind, AssetRequestStatus, AssetRequestListResponse, AssetRequestSingleResponse } from '../types';
+import { AuthResponse, LoginRequest, UserMeResponse, BusinessCreateRequest, BusinessCreateResponse, BusinessListResponse, LocationListResponse, UserListResponse, SystemUser, CreateUserRequest, CreateUserResponse, Distributor, DistributorListResponse, DistributorCreateRequest, DistributorCreateResponse, SlabListResponse, Outlet, OutletListResponse, InvoiceListResponse, InvoiceSingleResponse, Invoice, BulkApproveResponse, PayoutEstimateResponse, PayoutCycleResponse, PayoutListResponse, PayoutSingleResponse, HierarchyRelation, HierarchyMember, UserHierarchy, DashboardStatsResponse, SupportTicket, StockItemResponse, StockReportSubmitRequest, StockReportSubmitResponse, StockReportListResponse, LocationBulkUploadResponse, AssetRequestKind, AssetRequestStatus, AssetRequestListResponse, AssetRequestSingleResponse, BulkImportResponse } from '../types';
+
+/** Shared multipart helper for the master-data bulk-import endpoints. */
+const postFile = async (url: string, file: File): Promise<BulkImportResponse> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await apiClient.post<BulkImportResponse>(url, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
 
 export const apiService = {
   /**
@@ -76,6 +86,24 @@ export const apiService = {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
+    },
+  },
+
+  /**
+   * Master-data bulk import (NHQ_ADMIN). Each takes an Excel/CSV file; business is
+   * resolved from the caller's token. Locations use locations.bulkUpload above.
+   */
+  bulkImport: {
+    locations: (file: File) => postFile('/bulk-import/locations', file),
+    salesTeam: (file: File) => postFile('/bulk-import/sales-team', file),
+    skus: (file: File) => postFile('/bulk-import/skus', file),
+    distributors: (file: File) => postFile('/bulk-import/distributors', file),
+    retailers: (file: File) => postFile('/bulk-import/retailers', file),
+    qps: (file: File) => postFile('/bulk-import/qps', file),
+    /** Download the blank Excel template for a master (type: locations|sales-team|skus|distributors|retailers|qps). */
+    downloadTemplate: async (type: string): Promise<Blob> => {
+      const response = await apiClient.get(`/bulk-import/templates/${type}`, { responseType: 'blob' });
+      return response.data as Blob;
     },
   },
 
