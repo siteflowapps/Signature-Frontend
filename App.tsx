@@ -34,6 +34,7 @@ const ManageLocationsPage = React.lazy(() => import('./pages/ManageLocationsPage
 const AsmLookupPage = React.lazy(() => import('./pages/AsmLookupPage'));
 const CoolerRequestsPage = React.lazy(() => import('./pages/cooler/CoolerRequestsPage'));
 const MarketingRequestsPage = React.lazy(() => import('./pages/marketing/MarketingRequestsPage'));
+const MasterDataSetupPage = React.lazy(() => import('./pages/masterdata/MasterDataSetupPage'));
 const DmLookupPage = React.lazy(() => import('./pages/DMLookupPage'));
 const SupportTicketsPage = React.lazy(() => import('./pages/SupportTicketsPage'));
 const StockReportsPage = React.lazy(() => import('./pages/StockReportsPage'));
@@ -235,6 +236,12 @@ const AppRoutes: React.FC = () => {
           <Route path="/marketing-requests" element={
             <ProtectedRoute allowedRoles={[UserRole.MARKETING_MANAGER, UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN]}>
               <MarketingRequestsPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/master-data-setup" element={
+            <ProtectedRoute allowedRoles={[UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.SUPER_ADMIN]}>
+              <MasterDataSetupPage />
             </ProtectedRoute>
           } />
 
