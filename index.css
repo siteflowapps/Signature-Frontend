@@ -1,6 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+/* ── Brand colour ──
+   Signature's brand is teal. The codebase uses Tailwind `indigo-*` utilities as
+   the brand colour throughout, so we remap the entire indigo palette to teal
+   here. Every `*-indigo-*` class app-wide (and on the landing page) renders teal
+   with no per-file changes. To revert, delete this block. */
+@theme {
+  --color-indigo-50:  #f0fdfa;
+  --color-indigo-100: #ccfbf1;
+  --color-indigo-200: #99f6e4;
+  --color-indigo-300: #5eead4;
+  --color-indigo-400: #2dd4bf;
+  --color-indigo-500: #14b8a6;
+  --color-indigo-600: #0d9488;
+  --color-indigo-700: #0f766e;
+  --color-indigo-800: #115e59;
+  --color-indigo-900: #134e4a;
+  --color-indigo-950: #042f2e;
+}
+
 /* ── Base ── */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

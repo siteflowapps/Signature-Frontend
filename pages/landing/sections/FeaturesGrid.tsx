@@ -7,7 +7,7 @@ const FEATURES = [
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
     ),
-    gradient: 'linear-gradient(135deg, #1E3A8A, #2563EB)',
+    gradient: 'linear-gradient(135deg, #115E59, #0D9488)',
   },
   {
     title: 'Channel Classification Section',
@@ -15,7 +15,7 @@ const FEATURES = [
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
     ),
-    gradient: 'linear-gradient(135deg, #2563EB, #60A5FA)',
+    gradient: 'linear-gradient(135deg, #0D9488, #2DD4BF)',
   },
   {
     title: 'Invoice Management Section',
@@ -47,7 +47,7 @@ const FEATURES = [
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
     ),
-    gradient: 'linear-gradient(135deg, #1E3A8A, #10B981)',
+    gradient: 'linear-gradient(135deg, #115E59, #10B981)',
   },
 ];
 
@@ -69,7 +69,7 @@ export const FeaturesGrid: React.FC = () => (
         {FEATURES.map((f, i) => (
           <div key={f.title} className="lp-card lp-gradient-border p-6 lp-reveal group" style={{ transitionDelay: `${i * 70}ms` }}>
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 text-white transition-transform duration-300 group-hover:scale-110"
-              style={{ background: f.gradient, boxShadow: `0 4px 16px ${f.gradient.includes('#4F46E5') ? 'rgba(79,70,229,0.25)' : 'rgba(0,0,0,0.15)'}` }}>
+              style={{ background: f.gradient, boxShadow: `0 4px 16px ${f.gradient.includes('#0D9488') ? 'rgba(13,148,136,0.25)' : 'rgba(0,0,0,0.15)'}` }}>
               {f.icon}
             </div>
             <h3 className="text-base font-bold mb-2" style={{ color: 'var(--lp-text)' }}>{f.title}</h3>

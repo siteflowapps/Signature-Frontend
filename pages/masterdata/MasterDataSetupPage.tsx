@@ -1,9 +1,9 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { apiService } from '../../network/apiService';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/errorUtils';
-import { BulkImportResult, UserRole } from '../../types';
+import { Business, BulkImportResult, UserRole } from '../../types';
 
 interface Column { name: string; req: boolean; note?: string }
 interface Sheet { name: string; columns: Column[] }
@@ -17,7 +17,7 @@ interface StepDef {
   notes?: string[];
   columns: Column[];
   sheets?: Sheet[];
-  upload: (file: File) => Promise<{ success: boolean; data: BulkImportResult | null; error?: string }>;
+  upload: (file: File, businessId?: string) => Promise<{ success: boolean; data: BulkImportResult | null; error?: string }>;
 }
 
 // Columns mirror the backend TemplateService headers verbatim. Ordered to respect
@@ -36,7 +36,7 @@ const STEPS: StepDef[] = [
       { name: 'Pincode', req: true },
       { name: 'Location ID', req: false, note: 'explicit pincode id; normally blank' },
     ],
-    upload: (file) => apiService.bulkImport.locations(file),
+    upload: (file, businessId) => apiService.bulkImport.locations(file, businessId),
   },
   {
     key: 'sales-team',
@@ -230,17 +230,41 @@ const MasterDataSetupPage: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
 
-  // Super admins are scoped to the Location master only; other admins get the full setup flow.
-  const steps = useMemo(
-    () => (user?.role === UserRole.SUPER_ADMIN ? STEPS.filter(s => s.key === 'locations') : STEPS),
-    [user?.role],
-  );
+  // Locations in Master Data Setup are super-admin only. Super admins are scoped to the
+  // Location master here; every other admin (NHQ / Business) uses the rest of the flow and
+  // manages locations on the dedicated Locations page instead.
+  const steps = useMemo(() => {
+    if (user?.role === UserRole.SUPER_ADMIN) return STEPS.filter(s => s.key === 'locations');
+    return STEPS.filter(s => s.key !== 'locations');
+  }, [user?.role]);
 
   const [activeKey, setActiveKey] = useState(steps[0].key);
   const [statusMap, setStatusMap] = useState<Record<string, StepStatus>>({});
   const [resultMap, setResultMap] = useState<Record<string, BulkImportResult | null>>({});
   const [downloading, setDownloading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Super admins are cross-tenant, so they must pick the target business before uploading.
+  // Other admins are scoped to their own business via the token, so no selection is needed.
+  const requiresBusiness = user?.role === UserRole.SUPER_ADMIN;
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businessId, setBusinessId] = useState('');
+  const [loadingBusinesses, setLoadingBusinesses] = useState(false);
+
+  useEffect(() => {
+    if (!requiresBusiness) return;
+    let cancelled = false;
+    setLoadingBusinesses(true);
+    apiService.business
+      .getAll(0, 200)
+      .then(res => { if (!cancelled) setBusinesses(res.data?.content ?? []); })
+      .catch(err => { if (!cancelled) showToast(getErrorMessage(err) || 'Failed to load businesses.', 'error'); })
+      .finally(() => { if (!cancelled) setLoadingBusinesses(false); });
+    return () => { cancelled = true; };
+  }, [requiresBusiness, showToast]);
+
+  // Gate downloads/uploads until a super admin has chosen a business.
+  const businessReady = !requiresBusiness || !!businessId;
 
   const activeIndex = Math.max(0, steps.findIndex(s => s.key === activeKey));
   const step = steps[activeIndex];
@@ -249,9 +273,13 @@ const MasterDataSetupPage: React.FC = () => {
   const doneCount = steps.filter(s => statusMap[s.key] === 'done').length;
 
   const handleDownload = async () => {
+    if (requiresBusiness && !businessId) {
+      showToast('Select a business first.', 'error');
+      return;
+    }
     setDownloading(true);
     try {
-      const blob = await apiService.bulkImport.downloadTemplate(step.templateType);
+      const blob = await apiService.bulkImport.downloadTemplate(step.templateType, businessId || undefined);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -271,10 +299,14 @@ const MasterDataSetupPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (!file) return;
+    if (requiresBusiness && !businessId) {
+      showToast('Select a business first.', 'error');
+      return;
+    }
 
     setStatusMap(m => ({ ...m, [activeKey]: 'uploading' }));
     try {
-      const res = await step.upload(file);
+      const res = await step.upload(file, businessId || undefined);
       if (res.success && res.data) {
         const r = res.data;
         setResultMap(m => ({ ...m, [activeKey]: r }));
@@ -295,7 +327,9 @@ const MasterDataSetupPage: React.FC = () => {
     }
   };
 
-  const unmetDeps = (step.depends || []).filter(d => statusMap[d] !== 'done');
+  // Only surface dependencies that are part of this user's visible flow — e.g. business
+  // admins don't upload Locations here, so don't nag them about it.
+  const unmetDeps = (step.depends || []).filter(d => statusMap[d] !== 'done' && steps.some(s => s.key === d));
 
   const StepDot: React.FC<{ s: StepStatus; index: number }> = ({ s, index }) => {
     if (s === 'done') return <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shrink-0"><svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg></div>;
@@ -317,7 +351,32 @@ const MasterDataSetupPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Business selector — super admins must choose the target business first */}
+      {requiresBusiness && (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3m4-12h2m-2 4h2m6-4h2m-2 4h2" /></svg>
+            </span>
+            <label htmlFor="md-business" className="text-sm font-bold text-slate-800">Select business <span className="text-rose-500">*</span></label>
+          </div>
+          <p className="text-xs text-slate-400 mt-1 ml-8">Choose the business this master data belongs to before downloading the template or uploading.</p>
+          <select
+            id="md-business"
+            value={businessId}
+            onChange={e => setBusinessId(e.target.value)}
+            disabled={loadingBusinesses}
+            className="mt-3 ml-8 w-full max-w-sm px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 disabled:opacity-60"
+          >
+            <option value="">{loadingBusinesses ? 'Loading businesses…' : 'Select a business…'}</option>
+            {businesses.map(b => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 lg:grid-cols-3 gap-5 transition-opacity ${businessReady ? '' : 'opacity-40 pointer-events-none'}`}>
         {/* Stepper */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-2">

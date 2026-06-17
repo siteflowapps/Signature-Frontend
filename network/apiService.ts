@@ -1,11 +1,12 @@
 import apiClient from './apiClient';
-import { AuthResponse, LoginRequest, UserMeResponse, BusinessCreateRequest, BusinessCreateResponse, BusinessListResponse, LocationListResponse, UserListResponse, SystemUser, CreateUserRequest, CreateUserResponse, Distributor, DistributorListResponse, DistributorCreateRequest, DistributorCreateResponse, SlabListResponse, Outlet, OutletListResponse, InvoiceListResponse, InvoiceSingleResponse, Invoice, BulkApproveResponse, PayoutEstimateResponse, PayoutCycleResponse, PayoutListResponse, PayoutSingleResponse, HierarchyRelation, HierarchyMember, UserHierarchy, DashboardStatsResponse, SupportTicket, StockItemResponse, StockReportSubmitRequest, StockReportSubmitResponse, StockReportListResponse, LocationBulkUploadResponse, AssetRequestKind, AssetRequestStatus, AssetRequestListResponse, AssetRequestSingleResponse, BulkImportResponse } from '../types';
+import { AuthResponse, LoginRequest, UserMeResponse, BusinessCreateRequest, BusinessCreateResponse, BusinessListResponse, LocationListResponse, UserListResponse, SystemUser, CreateUserRequest, CreateUserResponse, Distributor, DistributorListResponse, DistributorCreateRequest, DistributorCreateResponse, SlabListResponse, Outlet, OutletListResponse, InvoiceListResponse, InvoiceSingleResponse, Invoice, BulkApproveResponse, PayoutEstimateResponse, PayoutCycleResponse, PayoutListResponse, PayoutSingleResponse, HierarchyRelation, HierarchyMember, UserHierarchy, DashboardStatsResponse, SupportTicket, StockItemResponse, StockReportSubmitRequest, StockReportSubmitResponse, StockReportListResponse, LocationBulkUploadResponse, AssetRequestKind, AssetRequestStatus, AssetRequestListResponse, AssetRequestSingleResponse, BulkImportResponse, CsoOutletAssignmentListResponse, CsoOutletAssignmentSingleResponse } from '../types';
 
 /** Shared multipart helper for the master-data bulk-import endpoints. */
-const postFile = async (url: string, file: File): Promise<BulkImportResponse> => {
+const postFile = async (url: string, file: File, businessId?: string): Promise<BulkImportResponse> => {
   const formData = new FormData();
   formData.append('file', file);
-  const response = await apiClient.post<BulkImportResponse>(url, formData, {
+  const target = businessId ? `${url}?businessId=${encodeURIComponent(businessId)}` : url;
+  const response = await apiClient.post<BulkImportResponse>(target, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return response.data;
@@ -78,11 +79,20 @@ export const apiService = {
       const response = await apiClient.get<LocationListResponse>(`/locations?pincode=${encodeURIComponent(pincode)}`);
       return response.data;
     },
-    /** Add locations in bulk via an Excel/CSV file (columns: pincode, city, state). NHQ_ADMIN scoped. */
+    /** Add locations in bulk via an Excel/CSV file (columns: pincode, city, state). NHQ_ADMIN scoped (business from token). */
     bulkUpload: async (file: File): Promise<LocationBulkUploadResponse> => {
       const formData = new FormData();
       formData.append('file', file);
       const response = await apiClient.post<LocationBulkUploadResponse>('/locations/bulk-upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    },
+    /** SUPER_ADMIN bulk upload scoped to an explicit business. */
+    bulkUploadForBusiness: async (file: File, businessId: string): Promise<LocationBulkUploadResponse> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await apiClient.post<LocationBulkUploadResponse>(`/locations/bulk-upload/${businessId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
@@ -94,15 +104,18 @@ export const apiService = {
    * resolved from the caller's token. Locations use locations.bulkUpload above.
    */
   bulkImport: {
-    locations: (file: File) => postFile('/bulk-import/locations', file),
+    locations: (file: File, businessId?: string) => postFile('/bulk-import/locations', file, businessId),
     salesTeam: (file: File) => postFile('/bulk-import/sales-team', file),
     skus: (file: File) => postFile('/bulk-import/skus', file),
     distributors: (file: File) => postFile('/bulk-import/distributors', file),
     retailers: (file: File) => postFile('/bulk-import/retailers', file),
     qps: (file: File) => postFile('/bulk-import/qps', file),
     /** Download the blank Excel template for a master (type: locations|sales-team|skus|distributors|retailers|qps). */
-    downloadTemplate: async (type: string): Promise<Blob> => {
-      const response = await apiClient.get(`/bulk-import/templates/${type}`, { responseType: 'blob' });
+    downloadTemplate: async (type: string, businessId?: string): Promise<Blob> => {
+      const url = businessId
+        ? `/bulk-import/templates/${type}?businessId=${encodeURIComponent(businessId)}`
+        : `/bulk-import/templates/${type}`;
+      const response = await apiClient.get(url, { responseType: 'blob' });
       return response.data as Blob;
     },
   },
@@ -384,6 +397,16 @@ export const apiService = {
       payload: { reason: string; name?: string; ownerName?: string; email?: string; outletType?: string; address?: string },
     ): Promise<{ success: boolean; data?: Outlet | null; error?: string; errorCode?: string; timestamp: string }> => {
       const response = await apiClient.put<{ success: boolean; data?: Outlet | null; error?: string; errorCode?: string; timestamp: string }>(`/outlets/${outletId}`, payload);
+      return response.data;
+    },
+    /** Outlets currently assigned to a CSO (active field assignments). Powers the CSO ↔ Outlet mapping screen. */
+    byCso: async (csoId: string): Promise<CsoOutletAssignmentListResponse> => {
+      const response = await apiClient.get<CsoOutletAssignmentListResponse>(`/outlets/by-cso/${csoId}`);
+      return response.data;
+    },
+    /** Assign (or reassign) an outlet's CSO. Backend closes any prior active assignment. */
+    assignCso: async (outletId: string, csoId: string, reason?: string): Promise<CsoOutletAssignmentSingleResponse> => {
+      const response = await apiClient.put<CsoOutletAssignmentSingleResponse>(`/outlets/${outletId}/cso`, { csoId, reason });
       return response.data;
     },
   },

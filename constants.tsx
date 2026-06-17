@@ -2,7 +2,7 @@
 import React from 'react';
 
 export const COLORS = {
-  primary: '#4F46E5', // Indigo 600
+  primary: '#0D9488', // Indigo 600
   secondary: '#1E293B',
   success: '#15803D', // Green 700
   warning: '#C2410C', // Orange 700
