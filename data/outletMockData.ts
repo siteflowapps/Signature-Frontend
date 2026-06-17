@@ -90,7 +90,7 @@ export const STEP_DETAILS_COMPLETED: Record<string, Record<string, { label: stri
       { label: 'GPS Coordinates', value: '12.9716° N, 77.5946° E' },
       { label: 'Timestamp', value: '28 Jan 2025, 2:15 PM' },
       { label: 'Location Match', value: 'GPS Verified ✓' },
-      { label: 'CDO Status', value: 'CDO Complete ✓' },
+      { label: 'Signature Status', value: 'Signature Complete ✓' },
     ],
   },
   '2': {
@@ -141,7 +141,7 @@ export const STEP_DETAILS_COMPLETED: Record<string, Record<string, { label: stri
       { label: 'GPS Coordinates', value: '23.0225° N, 72.5714° E' },
       { label: 'Timestamp', value: '5 Feb 2025, 3:40 PM' },
       { label: 'Location Match', value: 'GPS Verified ✓' },
-      { label: 'CDO Status', value: 'CDO Complete ✓' },
+      { label: 'Signature Status', value: 'Signature Complete ✓' },
     ],
   },
   '3': {
@@ -192,7 +192,7 @@ export const STEP_DETAILS_COMPLETED: Record<string, Record<string, { label: stri
       { label: 'GPS Coordinates', value: '28.6519° N, 77.1905° E' },
       { label: 'Timestamp', value: '1 Feb 2025, 11:30 AM' },
       { label: 'Location Match', value: 'GPS Verified ✓' },
-      { label: 'CDO Status', value: 'CDO Complete ✓' },
+      { label: 'Signature Status', value: 'Signature Complete ✓' },
     ],
   },
 };
@@ -246,11 +246,11 @@ export const STEP_DETAILS_DEFAULT: Record<string, { label: string; value: string
     { label: 'GPS Coordinates', value: '—' },
     { label: 'Timestamp', value: '—' },
     { label: 'Location Match', value: '—' },
-    { label: 'CDO Status', value: 'Pending' },
+    { label: 'Signature Status', value: 'Pending' },
   ],
 };
 
-// Onboarding photos (Step 2 — Before CDO)
+// Onboarding photos (Step 2 — Before Signature)
 export const ONBOARDING_PHOTOS: Record<string, { url: string; caption: string }[]> = {
   '1': [
     { url: 'https://picsum.photos/seed/s1out/800/600', caption: 'Outside View' },
@@ -282,7 +282,7 @@ export const ONBOARDING_PHOTOS: Record<string, { url: string; caption: string }[
   ],
 };
 
-// Verification photos (Step 4 — After CDO) — only for completed outlets
+// Verification photos (Step 4 — After Signature) — only for completed outlets
 export const VERIFICATION_PHOTOS: Record<string, { url: string; caption: string }[]> = {
   '1': [
     { url: 'https://picsum.photos/seed/s1vcool/800/600', caption: 'Cooler Installed' },
@@ -447,7 +447,7 @@ export const OUTLET_PAYOUTS: Record<string, OutletPayout[]> = {
 
 export const OUTLET_ACTIVITIES: Record<string, OutletActivity[]> = {
   '1': [
-    { id: 'a1', type: 'system', title: 'Outlet Enrolled in CDO Program', user: 'System', timestamp: '12 Jan 2025' },
+    { id: 'a1', type: 'system', title: 'Outlet Enrolled in Signature Program', user: 'System', timestamp: '12 Jan 2025' },
     { id: 'a2', type: 'onboarding', title: 'Onboarding Photos Approved', user: 'Amit Verma (SE)', timestamp: '15 Jan 2025', status: 'Verified' },
     { id: 'a3', type: 'onboarding', title: 'Cooler Installation Verified', user: 'Rohan Phalke (Auditor)', timestamp: '28 Jan 2025', status: 'Verified' },
     { id: 'a4', type: 'invoice', title: 'January Invoice Verified', user: 'System', timestamp: '4 Feb 2025', status: '₹53,000' },
@@ -456,14 +456,14 @@ export const OUTLET_ACTIVITIES: Record<string, OutletActivity[]> = {
     { id: 'a7', type: 'payout', title: 'February Payout Settled', user: 'Finance Dept', timestamp: '14 Mar 2025', status: '₹1,320' },
   ],
   '2': [
-    { id: 'a1', type: 'system', title: 'Outlet Enrolled in CDO Program', user: 'System', timestamp: '20 Jan 2025' },
+    { id: 'a1', type: 'system', title: 'Outlet Enrolled in Signature Program', user: 'System', timestamp: '20 Jan 2025' },
     { id: 'a2', type: 'onboarding', title: 'Onboarding Photos Approved', user: 'Priya Mehta (SE)', timestamp: '22 Jan 2025' },
     { id: 'a3', type: 'onboarding', title: 'Digital Declaration Signed', user: 'Outlet Owner', timestamp: '22 Jan 2025' },
     { id: 'a4', type: 'invoice', title: 'January Invoice Verified', user: 'System', timestamp: '7 Feb 2025', status: '₹67,000' },
     { id: 'a5', type: 'payout', title: 'January Payout Settled', user: 'Finance Dept', timestamp: '16 Feb 2025', status: '₹1,340' },
   ],
   '3': [
-    { id: 'a1', type: 'system', title: 'Outlet Enrolled in CDO Program', user: 'System', timestamp: '18 Jan 2025' },
+    { id: 'a1', type: 'system', title: 'Outlet Enrolled in Signature Program', user: 'System', timestamp: '18 Jan 2025' },
     { id: 'a2', type: 'onboarding', title: 'PFP Agreement Signed', user: 'Outlet Owner', timestamp: '20 Jan 2025' },
     { id: 'a3', type: 'invoice', title: 'January Invoice Verified', user: 'System', timestamp: '5 Feb 2025', status: '₹102,500' },
   ]

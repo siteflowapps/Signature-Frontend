@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo */}
           <div className="flex items-center gap-2.5 shrink-0">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-sm" style={{ background: 'var(--lp-gradient-cta)' }}>S</div>
-            <span className="text-lg font-extrabold tracking-tight" style={{ color: 'var(--lp-text)' }}>Siteflow <span style={{ color: 'var(--lp-primary)' }}>CDO</span></span>
+            <span className="text-lg font-extrabold tracking-tight" style={{ color: 'var(--lp-text)' }}>Signature <span style={{ color: 'var(--lp-primary)' }}>Outlets</span></span>
           </div>
 
           {/* Desktop Links */}

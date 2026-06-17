@@ -72,8 +72,8 @@ const DistributorsList: React.FC = () => {
 
   const { user } = useAuth();
   const { showToast } = useToast();
-  const isViewOnly = user?.role === UserRole.FINANCE_ADMIN || user?.role === UserRole.BUSINESS_USER || user?.role === UserRole.RBL || user?.role === UserRole.SM;
-  const canDeactivateDistributors = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.BUSINESS_ADMIN;
+  const isViewOnly = user?.role === UserRole.FINANCE_ADMIN || user?.role === UserRole.FINANCE_MANAGER || user?.role === UserRole.BUSINESS_USER || user?.role === UserRole.RSM;
+  const canDeactivateDistributors = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.NHQ_ADMIN || user?.role === UserRole.BUSINESS_ADMIN;
 
   const tableHeaders = canDeactivateDistributors ? [...BASE_TABLE_HEADERS, ACTIONS_HEADER] : BASE_TABLE_HEADERS;
 

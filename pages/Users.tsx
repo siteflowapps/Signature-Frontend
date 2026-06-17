@@ -77,8 +77,8 @@ const Users: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isRBL = currentUser?.role === UserRole.RBL || currentUser?.role === UserRole.SM;
-  const isViewOnly = currentUser?.role === UserRole.FINANCE_ADMIN || currentUser?.role === UserRole.BUSINESS_USER || isRBL;
+  const isRSM = currentUser?.role === UserRole.RSM;
+  const isViewOnly = currentUser?.role === UserRole.FINANCE_ADMIN || currentUser?.role === UserRole.FINANCE_MANAGER || currentUser?.role === UserRole.BUSINESS_USER || isRSM;
 
   const handleExportUsers = async () => {
     if (totalElements === 0) return;
@@ -112,10 +112,10 @@ const Users: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            {isRBL ? 'Team Members' : 'Users'}
+            {isRSM ? 'Team Members' : 'Users'}
           </h2>
           <p className="text-slate-400 text-sm mt-0.5">
-            {isRBL ? 'View your hierarchy and team structure.' : 'Manage system access and roles.'}
+            {isRSM ? 'View your hierarchy and team structure.' : 'Manage system access and roles.'}
           </p>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">

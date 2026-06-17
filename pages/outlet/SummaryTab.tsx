@@ -43,12 +43,12 @@ interface SummaryTabProps {
   hierarchyLoading?: boolean;
 }
 
-const HIERARCHY_ROLES = ['ASE', 'ASM', 'SM', 'RBL'] as const;
+const HIERARCHY_ROLES = ['CSO', 'ASE', 'ASM', 'RSM'] as const;
 const ROLE_LABELS: Record<string, string> = {
+  CSO: 'CSO',
   ASE: 'ASE',
   ASM: 'ASM',
-  SM: 'Sales Manager',
-  RBL: 'Regional Business Lead',
+  RSM: 'Regional Sales Manager',
 };
 
 const formatStatus = (status: string | undefined) => {
@@ -201,7 +201,7 @@ const SummaryTab: React.FC<SummaryTabProps> = ({
         {renderFieldGrid(businessFields)}
       </div>
 
-      {/* Asset / CDO */}
+      {/* Asset / Signature */}
       <div className="bg-white rounded-[28px] border border-slate-100 p-7 shadow-sm">
         <div className="mb-5">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Assets</p>

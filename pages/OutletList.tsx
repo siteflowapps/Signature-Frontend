@@ -185,7 +185,7 @@ const OutletList: React.FC = () => {
             <p className="text-2xl font-black text-amber-700 tracking-tight">{stats.pending}</p>
           </div>
           <div className="bg-white rounded-2xl border border-indigo-100 p-4 shadow-sm">
-            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">CDO Verified</p>
+            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">Signature Verified</p>
             <p className="text-2xl font-black text-indigo-700 tracking-tight">{stats.withCompliance}</p>
           </div>
         </div>

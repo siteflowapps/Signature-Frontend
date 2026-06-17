@@ -177,7 +177,7 @@ const OutletDetail: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
-  const canDeactivate = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.BUSINESS_ADMIN;
+  const canDeactivate = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.NHQ_ADMIN || user?.role === UserRole.BUSINESS_ADMIN;
   const canEdit = canDeactivate;
 
   const initialOutlet: Outlet | undefined = (location.state as { outlet?: Outlet })?.outlet;
@@ -305,7 +305,7 @@ const OutletDetail: React.FC = () => {
                 <div className="flex items-center gap-2.5 flex-wrap mb-2">
                   <h1 className="text-2xl font-black text-slate-900 tracking-tight truncate">{outletInfo.name}</h1>
                   {(outletInfo.outletStatus === 'ASM_APPROVED' || outletInfo.outletStatus === 'ACTIVE') && (
-                    <img src="/assets/branding/cdo-emblem.png" alt="Certified Destination Outlet" title="Certified Destination Outlet" className="w-7 h-7 object-contain shrink-0" />
+                    <img src="/assets/branding/signature-emblem.png" alt="Signature" title="Signature" className="w-7 h-7 object-contain shrink-0" />
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">

@@ -4,7 +4,7 @@ import { apiService } from '../network/apiService';
 import { SystemUser, Distributor, UserRole } from '../types';
 import { useAuth } from '../context/AuthContext';
 
-interface AseDistributor {
+interface AsmDistributor {
   id: string;
   name: string;
 }
@@ -25,12 +25,12 @@ const AVATAR_COLORS = [
 ];
 const avatarColor = (name: string) => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 
-// ── ASE Card ──────────────────────────────────────────────────────────────────
-const AseCard: React.FC<{
-  ase: SystemUser;
+// ── ASM Card ──────────────────────────────────────────────────────────────────
+const AsmCard: React.FC<{
+  asm: SystemUser;
   isSelected: boolean;
   onClick: () => void;
-}> = ({ ase, isSelected, onClick }) => (
+}> = ({ asm, isSelected, onClick }) => (
   <button
     onClick={onClick}
     className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group border ${
@@ -40,16 +40,16 @@ const AseCard: React.FC<{
     }`}
   >
     <div
-      className={`flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br ${avatarColor(ase.name)} flex items-center justify-center shadow-sm`}
+      className={`flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br ${avatarColor(asm.name)} flex items-center justify-center shadow-sm`}
     >
-      <span className="text-xs font-black text-white">{getInitials(ase.name)}</span>
+      <span className="text-xs font-black text-white">{getInitials(asm.name)}</span>
     </div>
     <div className="flex-1 min-w-0">
       <p className={`text-sm font-bold truncate ${isSelected ? 'text-white' : 'text-slate-800'}`}>
-        {ase.name}
+        {asm.name}
       </p>
       <p className={`text-xs font-medium truncate ${isSelected ? 'text-indigo-200' : 'text-slate-400'}`}>
-        {ase.phone ?? 'No phone'}
+        {asm.phone ?? 'No phone'}
       </p>
     </div>
     <span
@@ -57,13 +57,13 @@ const AseCard: React.FC<{
         isSelected ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
       }`}
     >
-      {ase.status}
+      {asm.status}
     </span>
   </button>
 );
 
 // ── Distributor Row ───────────────────────────────────────────────────────────
-const DistributorRow: React.FC<{ dist: AseDistributor; index: number; onUnlink: () => void; canUnlink: boolean }> = ({ dist, index, onUnlink, canUnlink }) => (
+const DistributorRow: React.FC<{ dist: AsmDistributor; index: number; onUnlink: () => void; canUnlink: boolean }> = ({ dist, index, onUnlink, canUnlink }) => (
   <div
     className="group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-slate-100 hover:border-indigo-100 hover:shadow-sm transition-all"
     style={{ animationDelay: `${index * 40}ms` }}
@@ -102,20 +102,20 @@ const RightPanelPlaceholder: React.FC = () => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
       </svg>
     </div>
-    <h3 className="text-base font-black text-slate-700 mb-2">Select an ASE</h3>
+    <h3 className="text-base font-black text-slate-700 mb-2">Select an ASM</h3>
     <p className="text-sm text-slate-400 max-w-[220px] leading-relaxed">
-      Pick an Area Sales Executive from the list to view their mapped distributors.
+      Pick an Area Sales Manager from the list to view their mapped distributors.
     </p>
   </div>
 );
 
 // ── Add Distributors Modal ───────────────────────────────────────────────────
 const AddDistributorsModal: React.FC<{
-  ase: SystemUser;
+  asm: SystemUser;
   existingIds: string[];
   onClose: () => void;
-  onSaved: (updated: AseDistributor[]) => void;
-}> = ({ ase, existingIds, onClose, onSaved }) => {
+  onSaved: (updated: AsmDistributor[]) => void;
+}> = ({ asm, existingIds, onClose, onSaved }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [options, setOptions] = useState<Distributor[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -158,7 +158,7 @@ const AddDistributorsModal: React.FC<{
     setError(null);
     try {
       const res = await apiService.users.addDistributors(
-        ase.id,
+        asm.id,
         picked.map((p) => p.id)
       );
       if (res.success) {
@@ -181,7 +181,7 @@ const AddDistributorsModal: React.FC<{
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
           <div>
             <h2 className="text-base font-black text-slate-900">Map Distributors</h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">to {ase.name}</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">to {asm.name}</p>
           </div>
           <button
             onClick={onClose}
@@ -350,11 +350,11 @@ const AddDistributorsModal: React.FC<{
 
 // ── Unlink Confirmation Modal ────────────────────────────────────────────────
 const UnlinkConfirmModal: React.FC<{
-  ase: SystemUser;
-  distributor: AseDistributor;
+  asm: SystemUser;
+  distributor: AsmDistributor;
   onCancel: () => void;
   onConfirm: () => Promise<void>;
-}> = ({ ase, distributor, onCancel, onConfirm }) => {
+}> = ({ asm, distributor, onCancel, onConfirm }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -381,7 +381,7 @@ const UnlinkConfirmModal: React.FC<{
           <h2 className="text-base font-black text-slate-900 mb-2">Unlink distributor?</h2>
           <p className="text-sm text-slate-500 leading-relaxed">
             <span className="font-bold text-slate-700">{distributor.name}</span> will be removed from{' '}
-            <span className="font-bold text-slate-700">{ase.name}</span>. This action can be undone by re-mapping.
+            <span className="font-bold text-slate-700">{asm.name}</span>. This action can be undone by re-mapping.
           </p>
           {error && (
             <p className="mt-3 text-xs font-medium text-red-500">{error}</p>
@@ -417,50 +417,50 @@ const UnlinkConfirmModal: React.FC<{
 };
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-const AseLookupPage: React.FC = () => {
+const AsmLookupPage: React.FC = () => {
   const { user } = useAuth();
   const isReadOnly = user?.role === UserRole.BUSINESS_USER;
 
-  const [aseList, setAseList] = useState<SystemUser[]>([]);
-  const [aseLoading, setAseLoading] = useState(true);
-  const [aseError, setAseError] = useState<string | null>(null);
+  const [asmList, setAsmList] = useState<SystemUser[]>([]);
+  const [asmLoading, setAsmLoading] = useState(true);
+  const [asmError, setAsmError] = useState<string | null>(null);
 
-  const [selectedAse, setSelectedAse] = useState<SystemUser | null>(null);
-  const [distributors, setDistributors] = useState<AseDistributor[]>([]);
+  const [selectedAsm, setSelectedAsm] = useState<SystemUser | null>(null);
+  const [distributors, setDistributors] = useState<AsmDistributor[]>([]);
   const [distLoading, setDistLoading] = useState(false);
   const [distError, setDistError] = useState<string | null>(null);
 
   const [query, setQuery] = useState('');
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [pendingUnlink, setPendingUnlink] = useState<AseDistributor | null>(null);
+  const [pendingUnlink, setPendingUnlink] = useState<AsmDistributor | null>(null);
 
-  // Fetch all ASEs on mount
+  // Fetch all ASMs on mount
   useEffect(() => {
     const load = async () => {
       try {
-        setAseLoading(true);
-        const res = await apiService.users.getByRole('ASE');
-        if (res.success) setAseList(res.data);
-        else setAseError('Failed to load ASEs.');
+        setAsmLoading(true);
+        const res = await apiService.users.getByRole('ASM');
+        if (res.success) setAsmList(res.data);
+        else setAsmError('Failed to load ASMs.');
       } catch {
-        setAseError('An error occurred while fetching ASEs.');
+        setAsmError('An error occurred while fetching ASMs.');
       } finally {
-        setAseLoading(false);
+        setAsmLoading(false);
       }
     };
     load();
   }, []);
 
-  // Fetch distributors when an ASE is selected
+  // Fetch distributors when an ASM is selected
   useEffect(() => {
-    if (!selectedAse) { setDistributors([]); return; }
+    if (!selectedAsm) { setDistributors([]); return; }
     const load = async () => {
       try {
         setDistLoading(true);
         setDistError(null);
-        const res = await apiService.users.getDistributorsByUser(selectedAse.id);
+        const res = await apiService.users.getDistributorsByUser(selectedAsm.id);
         if (res.success) setDistributors(res.data);
-        else setDistError('Could not load distributors for this ASE.');
+        else setDistError('Could not load distributors for this ASM.');
       } catch {
         setDistError('An error occurred while fetching distributors.');
       } finally {
@@ -468,22 +468,22 @@ const AseLookupPage: React.FC = () => {
       }
     };
     load();
-  }, [selectedAse]);
+  }, [selectedAsm]);
 
-  const filteredAses = useMemo(() => {
+  const filteredAsms = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return aseList;
-    return aseList.filter(
+    if (!q) return asmList;
+    return asmList.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         (a.phone ?? '').includes(q)
     );
-  }, [aseList, query]);
+  }, [asmList, query]);
 
   const handleUnlinkConfirm = async () => {
-    if (!selectedAse || !pendingUnlink) return;
+    if (!selectedAsm || !pendingUnlink) return;
     const unlinkedId = pendingUnlink.id;
-    const res = await apiService.users.removeDistributors(selectedAse.id, [unlinkedId]);
+    const res = await apiService.users.removeDistributors(selectedAsm.id, [unlinkedId]);
     if (res.success) {
       setDistributors((prev) => prev.filter((d) => d.id !== unlinkedId));
       setPendingUnlink(null);
@@ -503,15 +503,15 @@ const AseLookupPage: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">ASE Distributor Lookup</h1>
+            <h1 className="text-xl font-black text-slate-900 tracking-tight">ASM Distributor Lookup</h1>
             <p className="text-sm text-slate-500 font-medium">
-              Search an Area Sales Executive and view their mapped distributors
+              Search an Area Sales Manager and view their mapped distributors
             </p>
           </div>
-          {!aseLoading && (
+          {!asmLoading && (
             <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-full">
               <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-              <span className="text-xs font-bold text-slate-500">{aseList.length} ASEs loaded</span>
+              <span className="text-xs font-bold text-slate-500">{asmList.length} ASMs loaded</span>
             </div>
           )}
         </div>
@@ -520,7 +520,7 @@ const AseLookupPage: React.FC = () => {
       {/* ── Two-panel body ──────────────────────────────────────────────── */}
       <div className="flex flex-1 min-h-0">
 
-        {/* LEFT: ASE list */}
+        {/* LEFT: ASM list */}
         <div className="w-80 flex-shrink-0 border-r border-slate-100 bg-slate-50 flex flex-col min-h-0">
           {/* Search */}
           <div className="p-4 border-b border-slate-100 bg-white flex-shrink-0">
@@ -531,7 +531,7 @@ const AseLookupPage: React.FC = () => {
                 </svg>
               </div>
               <input
-                id="ase-search"
+                id="asm-search"
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -548,32 +548,32 @@ const AseLookupPage: React.FC = () => {
             </div>
             {query && (
               <p className="text-xs text-slate-400 font-medium mt-2 pl-1">
-                {filteredAses.length} result{filteredAses.length !== 1 ? 's' : ''}
+                {filteredAsms.length} result{filteredAsms.length !== 1 ? 's' : ''}
               </p>
             )}
           </div>
 
-          {/* ASE list scroll area */}
+          {/* ASM list scroll area */}
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {aseLoading ? (
+            {asmLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-16 bg-white rounded-xl border border-slate-100 animate-pulse" />
               ))
-            ) : aseError ? (
+            ) : asmError ? (
               <div className="text-center py-10">
-                <p className="text-sm text-red-500 font-medium">{aseError}</p>
+                <p className="text-sm text-red-500 font-medium">{asmError}</p>
               </div>
-            ) : filteredAses.length === 0 ? (
+            ) : filteredAsms.length === 0 ? (
               <div className="text-center py-10">
-                <p className="text-sm text-slate-400 font-medium">No ASEs match your search.</p>
+                <p className="text-sm text-slate-400 font-medium">No ASMs match your search.</p>
               </div>
             ) : (
-              filteredAses.map((ase) => (
-                <AseCard
-                  key={ase.id}
-                  ase={ase}
-                  isSelected={selectedAse?.id === ase.id}
-                  onClick={() => setSelectedAse(ase)}
+              filteredAsms.map((asm) => (
+                <AsmCard
+                  key={asm.id}
+                  asm={asm}
+                  isSelected={selectedAsm?.id === asm.id}
+                  onClick={() => setSelectedAsm(asm)}
                 />
               ))
             )}
@@ -582,38 +582,38 @@ const AseLookupPage: React.FC = () => {
 
         {/* RIGHT: Distributor detail panel */}
         <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-          {!selectedAse ? (
+          {!selectedAsm ? (
             <RightPanelPlaceholder />
           ) : (
             <>
-              {/* ASE profile header */}
+              {/* ASM profile header */}
               <div className="px-6 py-5 bg-white border-b border-slate-100 flex-shrink-0">
                 <div className="flex items-center gap-4">
                   <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${avatarColor(selectedAse.name)} flex items-center justify-center shadow-md`}
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${avatarColor(selectedAsm.name)} flex items-center justify-center shadow-md`}
                   >
-                    <span className="text-sm font-black text-white">{getInitials(selectedAse.name)}</span>
+                    <span className="text-sm font-black text-white">{getInitials(selectedAsm.name)}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-black text-slate-900 tracking-tight truncate">{selectedAse.name}</h2>
+                    <h2 className="text-lg font-black text-slate-900 tracking-tight truncate">{selectedAsm.name}</h2>
                     <div className="flex items-center gap-3 mt-0.5">
                       <span className="flex items-center gap-1 text-xs text-slate-500 font-medium">
                         <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
-                        {selectedAse.phone ?? '—'}
+                        {selectedAsm.phone ?? '—'}
                       </span>
                       <span className="text-slate-200">|</span>
                       <span className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-                        {selectedAse.status}
+                        {selectedAsm.status}
                       </span>
                       <span className="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
-                        {selectedAse.role}
+                        {selectedAsm.role}
                       </span>
                     </div>
                   </div>
                   <button
-                    onClick={() => setSelectedAse(null)}
+                    onClick={() => setSelectedAsm(null)}
                     className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                     aria-label="Clear selection"
                   >
@@ -688,7 +688,7 @@ const AseLookupPage: React.FC = () => {
                       </svg>
                     </div>
                     <p className="text-sm font-bold text-slate-600 mb-1">No distributors mapped</p>
-                    <p className="text-xs text-slate-400 mb-4">This ASE has no distributors assigned yet.</p>
+                    <p className="text-xs text-slate-400 mb-4">This ASM has no distributors assigned yet.</p>
                     {!isReadOnly && (
                       <button
                         onClick={() => setAddModalOpen(true)}
@@ -721,17 +721,17 @@ const AseLookupPage: React.FC = () => {
       </div>
 
       {/* Modals */}
-      {addModalOpen && selectedAse && (
+      {addModalOpen && selectedAsm && (
         <AddDistributorsModal
-          ase={selectedAse}
+          asm={selectedAsm}
           existingIds={distributors.map((d) => d.id)}
           onClose={() => setAddModalOpen(false)}
           onSaved={(updated) => setDistributors(updated)}
         />
       )}
-      {pendingUnlink && selectedAse && (
+      {pendingUnlink && selectedAsm && (
         <UnlinkConfirmModal
-          ase={selectedAse}
+          asm={selectedAsm}
           distributor={pendingUnlink}
           onCancel={() => setPendingUnlink(null)}
           onConfirm={handleUnlinkConfirm}
@@ -741,4 +741,4 @@ const AseLookupPage: React.FC = () => {
   );
 };
 
-export default AseLookupPage;
+export default AsmLookupPage;

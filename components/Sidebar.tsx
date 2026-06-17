@@ -15,23 +15,21 @@ const ADMIN_MENU = [
   { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
   { name: 'Users', icon: Icons.Search, path: '/users' },
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
-  { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
+  { name: 'Locations', icon: Icons.Locations, path: '/manage-locations' },
   { name: 'Payouts', icon: Icons.Payouts, path: '/payouts' },
   { name: 'Reports', icon: Icons.Reports, path: '/reports' },
-  { name: 'Stock Reports', icon: Icons.Reports, path: '/stock-reports' },
-  { name: 'ASE Lookup', icon: Icons.ASELookup, path: '/ase-lookup' },
-  { name: 'DM Lookup', icon: Icons.ASELookup, path: '/dm-lookup' },
+  { name: 'ASM Lookup', icon: Icons.ASELookup, path: '/asm-lookup' },
+  { name: 'Master Data Setup', icon: Icons.Database, path: '/master-data-setup' },
 ];
 
 const BUSINESS_ADMIN_MENU = [
   { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
   { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
-  { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
+  { name: 'Locations', icon: Icons.Locations, path: '/manage-locations' },
   { name: 'Users', icon: Icons.Search, path: '/users' },
-  { name: 'Stock Reports', icon: Icons.Reports, path: '/stock-reports' },
-  { name: 'ASE Lookup', icon: Icons.ASELookup, path: '/ase-lookup' },
-  { name: 'DM Lookup', icon: Icons.ASELookup, path: '/dm-lookup' },
+  { name: 'ASM Lookup', icon: Icons.ASELookup, path: '/asm-lookup' },
+  { name: 'Master Data Setup', icon: Icons.Database, path: '/master-data-setup' },
 ];
 
 const BUSINESS_MENU = [
@@ -45,40 +43,35 @@ const FINANCE_ADMIN_MENU = [
   { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
   { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
-  { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
   { name: 'Users', icon: Icons.Search, path: '/users' },
   { name: 'Payouts', icon: Icons.Payouts, path: '/payouts' },
-  { name: 'Stock Reports', icon: Icons.Reports, path: '/stock-reports' },
 ];
 
 const BUSINESS_USER_MENU = [
   { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
   { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
-  { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
   { name: 'Locations', icon: Icons.Locations, path: '/locations' },
-  { name: 'ASE Lookup', icon: Icons.ASELookup, path: '/ase-lookup' },
-  { name: 'Stock Reports', icon: Icons.Reports, path: '/stock-reports' },
   { name: 'Support Tickets', icon: Icons.Ticket, path: '/support-tickets' },
   { name: 'Users', icon: Icons.Search, path: '/users' },
 ];
 
-const RBL_MENU = [
+const RSM_MENU = [
   { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
   { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
   { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
-  { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
   { name: 'My Team', icon: Icons.Team, path: '/team' },
   { name: 'Team Members', icon: Icons.Search, path: '/users' },
 ];
 
-const SM_MENU = [
+const MARKETING_MANAGER_MENU = [
   { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
-  { name: 'Outlets', icon: Icons.Outlets, path: '/outlets' },
-  { name: 'Distributors', icon: Icons.Distributors, path: '/distributors' },
-  { name: 'Slabs', icon: Icons.Dashboard, path: '/slabs' },
-  { name: 'My Team', icon: Icons.Team, path: '/team' },
-  { name: 'Team Members', icon: Icons.Search, path: '/users' },
+  { name: 'Marketing Requests', icon: Icons.Marketing, path: '/marketing-requests' },
+];
+
+const COOLER_TEAM_MENU = [
+  { name: 'Dashboard', icon: Icons.Dashboard, path: '/dashboard' },
+  { name: 'Cooler Requests', icon: Icons.Cooler, path: '/cooler-requests' },
 ];
 
 const DISTRIBUTOR_MENU = [
@@ -124,16 +117,18 @@ const Sidebar: React.FC = () => {
   const getMenuItems = () => {
     if (user?.role === UserRole.SUPER_ADMIN) {
       return ADMIN_MENU;
-    } else if (user?.role === UserRole.BUSINESS_ADMIN) {
+    } else if (user?.role === UserRole.NHQ_ADMIN || user?.role === UserRole.BUSINESS_ADMIN) {
       return BUSINESS_ADMIN_MENU;
-    } else if (user?.role === UserRole.FINANCE_ADMIN) {
+    } else if (user?.role === UserRole.FINANCE_ADMIN || user?.role === UserRole.FINANCE_MANAGER) {
       return FINANCE_ADMIN_MENU;
     } else if (user?.role === UserRole.BUSINESS_USER) {
       return BUSINESS_USER_MENU;
-    } else if (user?.role === UserRole.RBL) {
-      return RBL_MENU;
-    } else if (user?.role === UserRole.SM) {
-      return SM_MENU;
+    } else if (user?.role === UserRole.MARKETING_MANAGER) {
+      return MARKETING_MANAGER_MENU;
+    } else if (user?.role === UserRole.COOLER_TEAM) {
+      return COOLER_TEAM_MENU;
+    } else if (user?.role === UserRole.RSM) {
+      return RSM_MENU;
     } else if (user?.role === UserRole.DISTRIBUTOR) {
       return DISTRIBUTOR_MENU;
     } else if (user?.role === UserRole.DISTRIBUTOR_MANAGER) {
@@ -158,16 +153,22 @@ const Sidebar: React.FC = () => {
     switch (role) {
       case 'SUPER_ADMIN':
         return 'Super Admin';
+      case 'NHQ_ADMIN':
+        return 'NHQ Admin';
       case 'BUSINESS_ADMIN':
         return 'Business Admin';
       case 'BUSINESS_USER':
         return 'Business User';
       case 'FINANCE_ADMIN':
         return 'Finance Admin';
-      case 'RBL':
-        return 'RBL';
-      case 'SM':
-        return 'Sales Manager';
+      case 'FINANCE_MANAGER':
+        return 'Finance Manager';
+      case 'MARKETING_MANAGER':
+        return 'Marketing Manager';
+      case 'COOLER_TEAM':
+        return 'Cooler Team';
+      case 'RSM':
+        return 'Regional Sales Manager';
       case 'DISTRIBUTOR':
         return 'Distributor';
       case 'DISTRIBUTOR_MANAGER':
@@ -185,36 +186,37 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className="w-64 bg-white h-screen flex flex-col border-r border-slate-100 flex-shrink-0 relative z-20">
-      {/* Logo */}
-      <div className="px-5 pt-6 pb-4">
-        <div className="flex items-center gap-3 mb-2">
-          <img src="/assets/branding/cdo-emblem.png" alt="CDO" className="w-10 h-10 object-contain" />
-          <div className="flex flex-col">
-            <h1 className="text-[15px] font-black tracking-tighter text-slate-900 leading-none">Siteflow CDO</h1>
-            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-1">Powered by Siteflow</p>
+      {/* Brand */}
+      <div className="px-5 pt-6 pb-5 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white ring-1 ring-slate-100 shadow-sm flex items-center justify-center p-1 shrink-0">
+            <img src="/assets/branding/signature-emblem.png" alt="Signature" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-[15px] font-black tracking-tight text-slate-900 leading-none truncate">Signature Outlets</h1>
+            <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-[0.18em] mt-1.5">Enterprise Console</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <p className="px-3 pb-2 text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Menu</p>
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link
               key={item.name}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group ${
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                 isActive
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 translate-x-1'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1'
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} />
-              <span className="font-bold text-sm tracking-wide">{item.name}</span>
-              {isActive && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />
-              )}
+              {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-indigo-600" />}
+              <item.icon className={`w-[18px] h-[18px] shrink-0 transition-colors ${isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+              <span className={`text-sm tracking-tight ${isActive ? 'font-bold' : 'font-semibold'}`}>{item.name}</span>
             </Link>
           );
         })}
@@ -229,7 +231,7 @@ const Sidebar: React.FC = () => {
       </div>
 
       {/* User Section — single click zone */}
-      <div className="px-3 pb-4 mt-auto relative" ref={popoverRef}>
+      <div className="px-3 pb-4 pt-2 mt-auto relative border-t border-slate-100" ref={popoverRef}>
         {/* Popover Menu */}
         {showPopover && (
           <div className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-xl shadow-lg shadow-slate-200/80 border border-slate-100 overflow-hidden z-30 animate-in slide-in-from-bottom-2 fade-in duration-150">

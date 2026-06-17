@@ -85,7 +85,7 @@ const PayoutsTab: React.FC<PayoutsTabProps> = ({
       <body>
         <div class="header">
           <div>
-            <div class="company-name">SiteFlow CDO</div>
+            <div class="company-name">Signature Outlets</div>
             <div class="company-sub">Enterprise Retail Execution Platform</div>
           </div>
           <div class="receipt-title">
@@ -140,7 +140,7 @@ const PayoutsTab: React.FC<PayoutsTabProps> = ({
         </div>
 
         <div class="footer">
-          Generated from SiteFlow CDO Platform · ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+          Generated from Signature Outlets Platform · ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
         </div>
       </body>
       </html>

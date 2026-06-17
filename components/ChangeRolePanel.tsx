@@ -16,16 +16,14 @@ interface ChangeRolePanelProps {
 
 const PROMOTION_TARGET: Record<string, string> = {
   ASE: 'ASM',
-  ASM: 'SM',
-  SM: 'RBL',
-  RBL: 'RBL',
+  ASM: 'RSM',
+  RSM: 'RSM',
 };
 
 /** Parent role required for the *target* role (omit when target sits at top). */
 const PARENT_ROLE_FOR_TARGET: Record<string, string | undefined> = {
-  ASM: 'SM',
-  SM: 'RBL',
-  RBL: undefined,
+  ASM: 'RSM',
+  RSM: undefined,
 };
 
 export const ChangeRolePanel: React.FC<ChangeRolePanelProps> = ({ isOpen, user, onClose, onSuccess }) => {
@@ -322,7 +320,7 @@ export const ChangeRolePanel: React.FC<ChangeRolePanelProps> = ({ isOpen, user, 
                 onChange={e => setReason(e.target.value)}
                 rows={3}
                 placeholder={isAseFlow
-                  ? 'e.g. Promoted to ASM South after RBL approval'
+                  ? 'e.g. Promoted to ASM South after RSM approval'
                   : 'e.g. Reassigning territory after team restructure'}
                 className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 focus:outline-none transition-all resize-none"
               />

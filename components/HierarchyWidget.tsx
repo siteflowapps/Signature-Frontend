@@ -6,10 +6,10 @@ import './HierarchyWidget.css';
 // ─── TYPES & HELPERS ──────────────────────────────────────────────────────────
 
 const ROLE_META: Record<string, { label: string; text: string; bg: string; dot: string; border: string; glow: string }> = {
-  RBL: { label: 'RBL', text: 'text-violet-700', bg: 'bg-violet-50', dot: 'bg-violet-500', border: 'border-violet-200', glow: 'hover:ring-violet-200' },
-  SM:  { label: 'SM',  text: 'text-indigo-700', bg: 'bg-indigo-50', dot: 'bg-indigo-500', border: 'border-indigo-200', glow: 'hover:ring-indigo-200' },
+  RSM: { label: 'RSM', text: 'text-violet-700', bg: 'bg-violet-50', dot: 'bg-violet-500', border: 'border-violet-200', glow: 'hover:ring-violet-200' },
   ASM: { label: 'ASM', text: 'text-sky-700',    bg: 'bg-sky-50',    dot: 'bg-sky-500',    border: 'border-sky-200',    glow: 'hover:ring-sky-200'    },
-  ASE: { label: 'ASE', text: 'text-emerald-700',bg: 'bg-emerald-50',dot: 'bg-emerald-500',border: 'border-emerald-200',glow: 'hover:ring-emerald-200'}
+  ASE: { label: 'ASE', text: 'text-emerald-700',bg: 'bg-emerald-50',dot: 'bg-emerald-500',border: 'border-emerald-200',glow: 'hover:ring-emerald-200'},
+  CSO: { label: 'CSO', text: 'text-lime-700',   bg: 'bg-lime-50',   dot: 'bg-lime-500',   border: 'border-lime-200',   glow: 'hover:ring-lime-200'   }
 };
 
 const getInitials = (name: string) =>

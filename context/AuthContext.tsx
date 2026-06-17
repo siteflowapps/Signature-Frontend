@@ -4,14 +4,20 @@ import { apiService } from '../network/apiService';
 import { setAuthData, clearAuthData, getUserRole, getUserId, getAccessToken, getRefreshToken, isTokenValid, decodeToken } from '../utils/tokenStorage';
 import { getFriendlyErrorMessage } from '../utils/errorUtils';
 
-/** Only these roles are allowed to log in to the CDO web dashboard */
-const CDO_ALLOWED_ROLES: string[] = [
+/**
+ * Only these roles are allowed to log in to the Signature web dashboard.
+ * Mobile-only roles (ASE, ASM, CSO, OUTLET) are intentionally excluded.
+ */
+const SIGNATURE_ALLOWED_ROLES: string[] = [
   'SUPER_ADMIN',
+  'NHQ_ADMIN',
   'BUSINESS_ADMIN',
-  'FINANCE_ADMIN',
   'BUSINESS_USER',
-  'RBL',
-  'SM',
+  'FINANCE_ADMIN',
+  'FINANCE_MANAGER',
+  'MARKETING_MANAGER',
+  'COOLER_TEAM',
+  'RSM',
   'DISTRIBUTOR',
   'DISTRIBUTOR_MANAGER',
   'SUPPORT',
@@ -46,7 +52,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
         if (roleStr && idStr) {
           // Block roles not allowed on this dashboard
-          if (!CDO_ALLOWED_ROLES.includes(roleStr)) {
+          if (!SIGNATURE_ALLOWED_ROLES.includes(roleStr)) {
             clearAuthData();
             setIsLoading(false);
             return;
@@ -161,7 +167,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     // Block roles not allowed on this dashboard
     const incomingRole = data.data.role || '';
-    if (!CDO_ALLOWED_ROLES.includes(incomingRole)) {
+    if (!SIGNATURE_ALLOWED_ROLES.includes(incomingRole)) {
       clearAuthData();
       throw new Error('Access denied. Your role does not have permission to access this dashboard. Please contact your administrator.');
     }

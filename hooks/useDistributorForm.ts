@@ -45,9 +45,9 @@ export const useDistributorForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const isAdmin = user?.role === UserRole.SUPER_ADMIN;
-  const isBusinessAdmin = user?.role === UserRole.BUSINESS_ADMIN;
-  
-  // If Business Admin, pull businessId from their profile
+  const isBusinessAdmin = user?.role === UserRole.NHQ_ADMIN || user?.role === UserRole.BUSINESS_ADMIN;
+
+  // If NHQ/Business Admin, pull businessId from their profile (they are scoped to one business)
   const effectiveBusinessId = isBusinessAdmin ? (user?.businessId || '') : formData.businessId;
 
   const isFormDirty = useCallback(() => {

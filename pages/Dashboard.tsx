@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { UserRole, DashboardStats } from '../types';
 import { useDashboardQuery } from '../hooks/queries/useDashboardQuery';
 import DistributorDashboard from './distributor/DistributorDashboard';
+import CoolerDashboard from './cooler/CoolerDashboard';
+import MarketingDashboard from './marketing/MarketingDashboard';
 
 // ─── Shared Helpers ───────────────────────────────────────────────────────────
 const fmt = (n: number) => n.toLocaleString('en-IN');
@@ -55,6 +57,71 @@ const SectionHeader: React.FC<{ title: string; sub?: string; action?: React.Reac
     </div>
     {action}
   </div>
+);
+
+// Onboarding nudge for a freshly-provisioned tenant — guides through Master Data Setup.
+const GetStartedCard: React.FC<{ stats: DashboardStats }> = ({ stats }) => {
+  const steps = [
+    { label: 'Locations', sub: 'Region → State → Pincode', done: (stats.totalOutlets || 0) > 0 },
+    { label: 'Sales Team', sub: 'RSM → ASM → ASE → CSO', done: (stats.totalUsers || 0) > 0 },
+    { label: 'Distributors', sub: 'Mapped to ASMs', done: (stats.totalDistributors || 0) > 0 },
+    { label: 'Retailers', sub: 'Outlet master', done: (stats.totalOutlets || 0) > 0 },
+  ];
+  const doneCount = steps.filter(s => s.done).length;
+  return (
+    <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-white p-6 shadow-sm">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-widest">Setup</span>
+          </div>
+          <h3 className="text-lg font-black text-slate-900 tracking-tight mt-2">Get started</h3>
+          <p className="text-sm text-slate-500 mt-0.5">Upload your master data to bring the platform to life.</p>
+        </div>
+        <Link to="/master-data-setup" className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 shadow-sm shadow-indigo-500/25 transition-colors shrink-0">
+          Open Master Data Setup
+        </Link>
+      </div>
+
+      <div className="mt-4 flex items-center gap-3">
+        <div className="flex-1 h-1.5 bg-white rounded-full overflow-hidden border border-indigo-100">
+          <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
+        </div>
+        <span className="text-xs font-bold text-slate-500">{doneCount}/{steps.length}</span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {steps.map(s => (
+          <Link key={s.label} to="/master-data-setup" className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white border border-slate-100 hover:border-indigo-200 transition-colors group">
+            {s.done ? (
+              <span className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+              </span>
+            ) : (
+              <span className="w-6 h-6 rounded-full border-2 border-slate-200 shrink-0" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-slate-800">{s.label}</p>
+              <p className="text-[11px] text-slate-400 truncate">{s.sub}</p>
+            </div>
+            {!s.done && <span className="text-[11px] font-bold text-indigo-600 shrink-0 group-hover:underline">Set up →</span>}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Clean icon-based shortcut card (replaces the old emoji gradient tiles).
+const QuickNavCard: React.FC<{ to: string; label: string; sub: string; icon: React.ReactNode; tint: string }> = ({ to, label, sub, icon, tint }) => (
+  <Link to={to} className="group bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200 transition-all">
+    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${tint}`}>{icon}</div>
+    <p className="text-sm font-bold text-slate-800">{label}</p>
+    <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+      {sub}
+      <svg className="w-3 h-3 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+    </p>
+  </Link>
 );
 
 // ─── Shared Icons ──────────────────────────────────────────────────────────────
@@ -128,8 +195,8 @@ const AdminDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Platform Overview</h2>
-          <p className="text-slate-400 text-sm mt-0.5">Full system visibility · SiteFlow CDO</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">NHQ Team Overview</h2>
+          <p className="text-slate-400 text-sm mt-0.5">Full system visibility · Signature Outlets</p>
         </div>
         <div className="flex gap-2">
           <Link to="/businesses/add" className="flex items-center gap-1.5 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-800 transition-all">
@@ -152,22 +219,15 @@ const AdminDashboard: React.FC = () => {
         <KpiCard loading={loading} label="Total Invoices" value={fmt(stats.totalInvoices || 0)} badge={`${stats.paidInvoices || 0} Paid`} badgeColor="bg-teal-50 text-teal-600" icon={Icons.invoice} iconColor="bg-violet-50 text-violet-600" />
       </div>
 
-      {/* Invoice Pipeline */}
-      <InvoicePipeline stats={stats} loading={loading} />
-
       {/* Quick Nav */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Manage Outlets', to: '/outlets', color: 'from-indigo-500 to-indigo-700', icon: '🏪' },
-          { label: 'Manage Users', to: '/users', color: 'from-sky-500 to-sky-700', icon: '👥' },
-          { label: 'Payouts', to: '/payouts', color: 'from-amber-500 to-orange-600', icon: '💰' },
-          { label: 'Businesses', to: '/businesses', color: 'from-violet-500 to-violet-700', icon: '🏢' },
-        ].map(q => (
-          <Link key={q.to} to={q.to} className={`bg-gradient-to-br ${q.color} text-white rounded-2xl p-5 shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all`}>
-            <p className="text-2xl mb-2">{q.icon}</p>
-            <p className="text-xs font-black uppercase tracking-widest">{q.label}</p>
-          </Link>
-        ))}
+      <div>
+        <SectionHeader title="Quick actions" sub="Jump to the most-used areas" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <QuickNavCard to="/outlets" label="Outlets" sub="Browse & manage" icon={Icons.outlet} tint="bg-emerald-50 text-emerald-600" />
+          <QuickNavCard to="/users" label="Users" sub="Team & access" icon={Icons.users} tint="bg-sky-50 text-sky-600" />
+          <QuickNavCard to="/payouts" label="Payouts" sub="Settlements" icon={Icons.payout} tint="bg-amber-50 text-amber-600" />
+          <QuickNavCard to="/businesses" label="Businesses" sub="Tenant accounts" icon={Icons.business} tint="bg-violet-50 text-violet-600" />
+        </div>
       </div>
     </div>
   );
@@ -182,8 +242,8 @@ const BusinessAdminDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">CDO Program Dashboard</h2>
-          <p className="text-slate-400 text-sm mt-0.5">Campa Destination Outlet Program</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Dashboard</h2>
+          <p className="text-slate-400 text-sm mt-0.5">Business overview &amp; operations</p>
         </div>
         <div className="flex gap-2">
           <Link to="/add-user" className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-600/20">
@@ -195,38 +255,53 @@ const BusinessAdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* KPIs */}
+      {/* Onboarding nudge — shown until core master data exists */}
+      {!loading && !((stats.totalOutlets || 0) > 0 && (stats.totalDistributors || 0) > 0 && (stats.totalUsers || 0) > 0) && (
+        <GetStartedCard stats={stats} />
+      )}
+
+      {/* KPIs — four distinct, balanced metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard loading={loading} to="/outlets" label="Total Outlets" value={fmt(stats.totalOutlets || 0)} badge="Live" badgeColor="bg-emerald-50 text-emerald-600" icon={Icons.outlet} iconColor="bg-emerald-50 text-emerald-600" />
-        <KpiCard loading={loading} to="/outlets" label="Active Outlets" value={fmt(stats.activeOutlets || 0)} sub={`${stats.inProgressOutlets || 0} in progress`} icon={Icons.check} iconColor="bg-teal-50 text-teal-600" />
-        <KpiCard loading={loading} label="Invoices Pending" value={pendingInvoices}
-          badge={pendingInvoices > 0 ? 'Action Req' : 'Clear'} badgeColor={pendingInvoices > 0 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'}
-          icon={Icons.clock} iconColor="bg-orange-50 text-orange-600" />
-        <KpiCard loading={loading} label="Paid Invoices" value={fmt(stats.paidInvoices || 0)} icon={Icons.check} iconColor="bg-teal-50 text-teal-600" />
-      </div>
-
-      {/* Row 2: Users + Invoice volume */}
-      <div className="grid grid-cols-2 gap-4">
+        <KpiCard loading={loading} to="/outlets" label="Total Outlets" value={fmt(stats.totalOutlets || 0)} badge="Live" badgeColor="bg-emerald-50 text-emerald-600" sub={`${fmt(stats.activeOutlets || 0)} active`} icon={Icons.outlet} iconColor="bg-emerald-50 text-emerald-600" />
+        <KpiCard loading={loading} to="/outlets" label="In Progress" value={fmt(stats.inProgressOutlets || 0)} sub="Onboarding pipeline" icon={Icons.clock} iconColor="bg-orange-50 text-orange-600" />
         <KpiCard loading={loading} to="/users" label="Total Users" value={fmt(stats.totalUsers || 0)} icon={Icons.users} iconColor="bg-sky-50 text-sky-600" />
-        <KpiCard loading={loading} label="Total Invoices" value={fmt(stats.totalInvoices || 0)} icon={Icons.invoice} iconColor="bg-violet-50 text-violet-600" />
+        <KpiCard loading={loading} to="/distributors" label="Distributors" value={fmt(stats.totalDistributors || 0)} icon={Icons.distributor} iconColor="bg-violet-50 text-violet-600" />
       </div>
 
-      {/* Invoice Pipeline */}
-      <InvoicePipeline stats={stats} loading={loading} />
+      {/* Invoices — one consolidated panel instead of scattered cards */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+        <SectionHeader title="Invoices" sub="Across all approval stages" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Pending', value: pendingInvoices, dot: 'bg-orange-400' },
+            { label: 'Finance Approved', value: stats.financeApprovedInvoices || 0, dot: 'bg-indigo-400' },
+            { label: 'Paid', value: stats.paidInvoices || 0, dot: 'bg-emerald-400' },
+            { label: 'Rejected', value: stats.rejectedInvoices || 0, dot: 'bg-red-400' },
+          ].map(s => (
+            <div key={s.label} className="rounded-xl border border-slate-100 bg-slate-50/40 p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{s.label}</span>
+              </div>
+              {loading ? <div className="h-7 w-12 bg-slate-100 rounded animate-pulse" /> : <p className="text-2xl font-extrabold text-slate-900 tracking-tight">{fmt(s.value)}</p>}
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between text-sm">
+          <span className="text-slate-400 font-medium">Total invoices</span>
+          <span className="font-black text-slate-900">{loading ? '—' : fmt(stats.totalInvoices || 0)}</span>
+        </div>
+      </div>
 
       {/* Quick Nav */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'View Outlets', to: '/outlets', color: 'from-indigo-500 to-indigo-700', icon: '🏪' },
-          { label: 'Manage Users', to: '/users', color: 'from-sky-500 to-sky-700', icon: '👥' },
-          { label: 'Distributors', to: '/distributors', color: 'from-violet-500 to-violet-700', icon: '🚚' },
-          { label: 'Map Distributors', to: '/dm-lookup', color: 'from-rose-500 to-rose-700', icon: '🔗' },
-        ].map(q => (
-          <Link key={q.to} to={q.to} className={`bg-gradient-to-br ${q.color} text-white rounded-2xl p-5 shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all`}>
-            <p className="text-2xl mb-2">{q.icon}</p>
-            <p className="text-xs font-black uppercase tracking-widest">{q.label}</p>
-          </Link>
-        ))}
+      <div>
+        <SectionHeader title="Quick actions" sub="Jump to the most-used areas" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <QuickNavCard to="/outlets" label="Outlets" sub="Browse & manage" icon={Icons.outlet} tint="bg-emerald-50 text-emerald-600" />
+          <QuickNavCard to="/users" label="Users" sub="Team & access" icon={Icons.users} tint="bg-sky-50 text-sky-600" />
+          <QuickNavCard to="/distributors" label="Distributors" sub="Distributor network" icon={Icons.distributor} tint="bg-violet-50 text-violet-600" />
+          <QuickNavCard to="/master-data-setup" label="Master Data" sub="Bulk setup" icon={Icons.business} tint="bg-indigo-50 text-indigo-600" />
+        </div>
       </div>
     </div>
   );
@@ -240,7 +315,7 @@ const FinanceDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Finance Dashboard</h2>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Finance Manager Dashboard</h2>
           <p className="text-slate-400 text-sm mt-0.5">Invoice verification & payout settlement</p>
         </div>
         <Link to="/payouts" className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:-translate-y-0.5 transition-all">
@@ -286,22 +361,20 @@ const FinanceDashboard: React.FC = () => {
   );
 };
 
-// ─── ROLE: RBL / SM / BUSINESS_USER ──────────────────────────────────────────
+// ─── ROLE: RSM / BUSINESS_USER ───────────────────────────────────────────────
 const FieldManagerDashboard: React.FC = () => {
   const { user } = useAuth();
   const role = user?.role;
-  const isRBL = role === UserRole.RBL;
-  const isSM  = role === UserRole.SM;
+  const isRSM = role === UserRole.RSM;
 
   const { stats, loading } = useDashboardStats();
 
   const titles: Record<string, { title: string; sub: string }> = {
-    RBL:           { title: 'Regional Business Overview',  sub: 'Region-level performance · RBL' },
-    SM:            { title: 'Sales Manager Dashboard',     sub: 'Territory monitoring · SM' },
+    RSM:           { title: 'Regional Sales Overview',     sub: 'Region-level performance · RSM' },
     BUSINESS_USER: { title: 'Business Operations Overview', sub: 'Operations · Field activity' },
-    TRADE_MARKETING: { title: 'Trade Marketing Dashboard', sub: 'CDO program activity' },
+    TRADE_MARKETING: { title: 'Trade Marketing Dashboard', sub: 'Signature Outlets program activity' },
     CSO:           { title: 'CSO Dashboard',               sub: 'Sales operations overview' },
-    FINANCE:       { title: 'Finance Overview',            sub: 'Financial activity summary' },
+    FINANCE:       { title: 'Finance Manager Overview',    sub: 'Financial activity summary' },
   };
   const t = titles[role || ''] || { title: 'Operations Overview', sub: 'Territory monitoring' };
 
@@ -322,24 +395,19 @@ const FieldManagerDashboard: React.FC = () => {
 
       {/* KPIs — Row 2: Team + Invoice stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {isRBL && <KpiCard loading={loading} label="Sales Managers" value={fmt(stats.totalSm || 0)} icon={Icons.users} iconColor="bg-sky-50 text-sky-600" />}
-        {(isRBL || isSM) && <KpiCard loading={loading} label="ASM Count" value={fmt(stats.totalAsm || 0)} icon={Icons.users} iconColor="bg-indigo-50 text-indigo-600" />}
+        {isRSM && <KpiCard loading={loading} label="ASM Count" value={fmt(stats.totalAsm || 0)} icon={Icons.users} iconColor="bg-indigo-50 text-indigo-600" />}
         <KpiCard loading={loading} label="ASE Count" value={fmt(stats.totalAse || 0)} icon={Icons.users} iconColor="bg-sky-50 text-sky-600" />
-        {isSM && <KpiCard loading={loading} to="/outlets" label="ASM Pending Outlets" value={fmt(stats.asmPendingOutlets || 0)} badge={(stats.asmPendingOutlets || 0) > 0 ? 'Needs Attention' : 'Clear'} badgeColor={(stats.asmPendingOutlets || 0) > 0 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'} icon={Icons.alert} iconColor="bg-orange-50 text-orange-600" />}
+        {isRSM && <KpiCard loading={loading} to="/outlets" label="ASM Pending Outlets" value={fmt(stats.asmPendingOutlets || 0)} badge={(stats.asmPendingOutlets || 0) > 0 ? 'Needs Attention' : 'Clear'} badgeColor={(stats.asmPendingOutlets || 0) > 0 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'} icon={Icons.alert} iconColor="bg-orange-50 text-orange-600" />}
       </div>
 
       {/* Quick Navigation */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'View Outlets',  to: '/outlets',      color: 'from-indigo-500 to-indigo-700', icon: '🏪' },
-          { label: 'Distributors',  to: '/distributors', color: 'from-amber-500 to-orange-600',  icon: '🚚' },
-          { label: 'Slabs',         to: '/slabs',        color: 'from-slate-700 to-slate-900',   icon: '📊' },
-        ].map(q => (
-          <Link key={q.to} to={q.to} className={`bg-gradient-to-br ${q.color} text-white rounded-2xl p-5 shadow-lg hover:-translate-y-0.5 transition-all`}>
-            <p className="text-2xl mb-2">{q.icon}</p>
-            <p className="text-xs font-black uppercase tracking-widest">{q.label}</p>
-          </Link>
-        ))}
+      <div>
+        <SectionHeader title="Quick actions" sub="Jump to the most-used areas" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <QuickNavCard to="/outlets" label="Outlets" sub="Browse & manage" icon={Icons.outlet} tint="bg-emerald-50 text-emerald-600" />
+          <QuickNavCard to="/distributors" label="Distributors" sub="Distributor network" icon={Icons.distributor} tint="bg-violet-50 text-violet-600" />
+          {isRSM && <QuickNavCard to="/team" label="My Team" sub="Reporting hierarchy" icon={Icons.users} tint="bg-sky-50 text-sky-600" />}
+        </div>
       </div>
     </div>
   );
@@ -351,13 +419,17 @@ const Dashboard: React.FC = () => {
   const role = user?.role;
 
   const isAdmin = role === UserRole.SUPER_ADMIN;
-  const isBusinessAdmin = role === UserRole.BUSINESS_ADMIN;
-  const isFinanceAdmin = role === UserRole.FINANCE_ADMIN;
+  const isBusinessAdmin = role === UserRole.NHQ_ADMIN || role === UserRole.BUSINESS_ADMIN;
+  const isFinanceAdmin = role === UserRole.FINANCE_ADMIN || role === UserRole.FINANCE_MANAGER;
   const isDistributor = role === UserRole.DISTRIBUTOR || role === UserRole.DISTRIBUTOR_MANAGER;
+  const isCoolerTeam = role === UserRole.COOLER_TEAM;
+  const isMarketingManager = role === UserRole.MARKETING_MANAGER;
 
   if (isAdmin) return <AdminDashboard />;
   if (isBusinessAdmin) return <BusinessAdminDashboard />;
   if (isFinanceAdmin) return <FinanceDashboard />;
+  if (isCoolerTeam) return <CoolerDashboard />;
+  if (isMarketingManager) return <MarketingDashboard />;
   if (isDistributor) return <DistributorDashboard />;
   return <FieldManagerDashboard />;
 };

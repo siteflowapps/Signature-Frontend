@@ -18,7 +18,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ isAuthenticated, onSignIn, o
         Ready to Scale Your Retail Execution?
       </h2>
       <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto leading-relaxed">
-        Join thousands of field teams using Siteflow CDO to manage outlets, execute campaigns, and drive growth.
+        Join thousands of field teams using Signature Outlets to manage outlets, execute campaigns, and drive growth.
       </p>
       <div className="flex flex-wrap gap-4 justify-center">
         <button onClick={isAuthenticated ? onDashboard : onSignIn}
