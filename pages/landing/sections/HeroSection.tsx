@@ -148,7 +148,7 @@ export const HeroSection: React.FC<HeroProps> = ({ isAuthenticated, onSignIn, on
                 {/* Stat Cards Row */}
                 <div className="grid grid-cols-4 gap-3 mb-4">
                   {[
-                    { label: 'Outlets', value: '15,247', change: '+12%', color: '#4F46E5', sparkData: [20, 35, 30, 45, 40, 55, 50, 60, 55, 70, 65, 75] },
+                    { label: 'Outlets', value: '15,247', change: '+12%', color: '#0D9488', sparkData: [20, 35, 30, 45, 40, 55, 50, 60, 55, 70, 65, 75] },
                     { label: 'Invoices', value: '3,891', change: '+8%', color: '#059669', sparkData: [30, 25, 40, 35, 50, 45, 55, 60, 50, 65, 70, 68] },
                     { label: 'Campaigns', value: '24', change: 'Active', color: '#7C3AED', sparkData: [10, 15, 12, 20, 18, 22, 24, 20, 18, 24, 22, 24] },
                     { label: 'Payouts', value: '₹24.1L', change: 'This Month', color: '#D97706', sparkData: [40, 50, 45, 60, 55, 70, 65, 80, 75, 85, 90, 95] },
@@ -170,7 +170,7 @@ export const HeroSection: React.FC<HeroProps> = ({ isAuthenticated, onSignIn, on
                     <div className="text-xs font-bold" style={{ color: 'var(--lp-text)' }}>Monthly Performance</div>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ background: '#4F46E5' }} />
+                        <div className="w-2 h-2 rounded-full" style={{ background: '#0D9488' }} />
                         <span className="text-[9px] font-semibold" style={{ color: 'var(--lp-text-muted)' }}>Revenue</span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -187,7 +187,7 @@ export const HeroSection: React.FC<HeroProps> = ({ isAuthenticated, onSignIn, on
                       { h1: 60, h2: 65 }, { h1: 82, h2: 78 }, { h1: 95, h2: 85 },
                     ].map((bar, i) => (
                       <div key={i} className="flex-1 flex gap-[2px] items-end">
-                        <div className="flex-1 rounded-t-sm transition-all" style={{ height: `${bar.h1}%`, background: '#4F46E5', opacity: i === 11 ? 1 : 0.7 }} />
+                        <div className="flex-1 rounded-t-sm transition-all" style={{ height: `${bar.h1}%`, background: '#0D9488', opacity: i === 11 ? 1 : 0.7 }} />
                         <div className="flex-1 rounded-t-sm transition-all" style={{ height: `${bar.h2}%`, background: '#059669', opacity: i === 11 ? 1 : 0.5 }} />
                       </div>
                     ))}
@@ -206,7 +206,7 @@ export const HeroSection: React.FC<HeroProps> = ({ isAuthenticated, onSignIn, on
                     <div className="text-[10px] font-bold mb-2.5" style={{ color: 'var(--lp-text-muted)' }}>Recent Activity</div>
                     {[
                       { label: 'Invoice #INV-2847 scanned', time: '2m ago', dot: '#059669' },
-                      { label: 'Outlet RS-Mart activated', time: '15m ago', dot: '#4F46E5' },
+                      { label: 'Outlet RS-Mart activated', time: '15m ago', dot: '#0D9488' },
                       { label: 'Campaign "Blue Q4" launched', time: '1h ago', dot: '#7C3AED' },
                     ].map((item, j) => (
                       <div key={j} className="flex items-center gap-2 mb-2">
@@ -231,7 +231,7 @@ export const HeroSection: React.FC<HeroProps> = ({ isAuthenticated, onSignIn, on
                           <span className="text-[9px] font-black" style={{ color: 'var(--lp-primary)' }}>{outlet.pct}%</span>
                         </div>
                         <div className="h-1.5 rounded-full" style={{ background: 'var(--lp-border)' }}>
-                          <div className="h-full rounded-full transition-all" style={{ width: `${outlet.pct}%`, background: 'linear-gradient(90deg, #4F46E5, #7C3AED)' }} />
+                          <div className="h-full rounded-full transition-all" style={{ width: `${outlet.pct}%`, background: 'linear-gradient(90deg, #0D9488, #7C3AED)' }} />
                         </div>
                       </div>
                     ))}

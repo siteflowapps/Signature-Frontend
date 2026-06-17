@@ -6,14 +6,14 @@ const ROLES = [
     desc: 'Includes CSO, ASE, ASM, and RSM roles. Scan invoices, track daily visits, manage outlet onboarding, and oversee territory performance.',
     icon: '👤',
     features: ['6-Step Onboarding', 'Visit Tracking', 'Team Oversight'],
-    accentColor: '#1E3A8A',
+    accentColor: '#0F766E',
   },
   {
     title: 'NHQ Team (Admin)',
     desc: 'Configure campaigns, manage users & distributors, set slab rules, and oversee the entire Signature platform including bulk migrations.',
     icon: '⚙️',
     features: ['User Management', 'Campaign Config', 'Migration Console'],
-    accentColor: '#2563EB',
+    accentColor: '#0D9488',
   },
   {
     title: 'Finance & Marketing',

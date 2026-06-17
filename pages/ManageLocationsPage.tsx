@@ -1,16 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { apiService } from '../network/apiService';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { getErrorMessage } from '../utils/errorUtils';
-import { Location, LocationBulkUploadResult } from '../types';
+import { Business, Location, LocationBulkUploadResult, UserRole } from '../types';
 
 /**
- * Locations management for NHQ / Business Admins.
+ * Locations management for NHQ / Business / Super Admins.
  * - View: paginated list of locations (pincode / city / state).
  * - Add: bulk upload via Excel/CSV (the backend has no single-create endpoint).
+ *   NHQ_ADMIN uploads against their own business (token-scoped); SUPER_ADMIN
+ *   picks the target business and uploads via the business-scoped endpoint.
  */
 const ManageLocationsPage: React.FC = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +23,25 @@ const ManageLocationsPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [lastResult, setLastResult] = useState<LocationBulkUploadResult | null>(null);
 
+  // Super admins are cross-tenant, so they must choose the target business before uploading.
+  const requiresBusiness = user?.role === UserRole.SUPER_ADMIN;
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businessId, setBusinessId] = useState('');
+  const [loadingBusinesses, setLoadingBusinesses] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!requiresBusiness) return;
+    let cancelled = false;
+    setLoadingBusinesses(true);
+    apiService.business
+      .getAll(0, 200)
+      .then(res => { if (!cancelled) setBusinesses(res.data?.content ?? []); })
+      .catch(err => { if (!cancelled) showToast(getErrorMessage(err) || 'Failed to load businesses.', 'error'); })
+      .finally(() => { if (!cancelled) setLoadingBusinesses(false); });
+    return () => { cancelled = true; };
+  }, [requiresBusiness, showToast]);
 
   const loadLocations = async () => {
     setLoading(true);
@@ -58,11 +80,17 @@ const ManageLocationsPage: React.FC = () => {
     // Reset the input so selecting the same file again re-triggers onChange
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (!file) return;
+    if (requiresBusiness && !businessId) {
+      showToast('Select a business first.', 'error');
+      return;
+    }
 
     setIsUploading(true);
     setLastResult(null);
     try {
-      const res = await apiService.locations.bulkUpload(file);
+      const res = requiresBusiness
+        ? await apiService.locations.bulkUploadForBusiness(file, businessId)
+        : await apiService.locations.bulkUpload(file);
       if (res.success && res.data) {
         const r = res.data;
         setLastResult(r);
@@ -91,6 +119,20 @@ const ManageLocationsPage: React.FC = () => {
           <p className="text-slate-400 text-sm mt-0.5">View serviceable locations and add new ones in bulk.</p>
         </div>
         <div className="flex items-center gap-2">
+          {requiresBusiness && (
+            <select
+              value={businessId}
+              onChange={e => setBusinessId(e.target.value)}
+              disabled={loadingBusinesses || isUploading}
+              className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 disabled:opacity-60"
+              aria-label="Select business"
+            >
+              <option value="">{loadingBusinesses ? 'Loading businesses…' : 'Select a business…'}</option>
+              {businesses.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -101,7 +143,8 @@ const ManageLocationsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
+            disabled={isUploading || (requiresBusiness && !businessId)}
+            title={requiresBusiness && !businessId ? 'Select a business first' : undefined}
             className="px-4 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isUploading ? (
