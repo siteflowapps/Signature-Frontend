@@ -32,6 +32,7 @@ const Unauthorized = React.lazy(() => import('./pages/Unauthorized'));
 const LocationsPage = React.lazy(() => import('./pages/LocationsPage'));
 const ManageLocationsPage = React.lazy(() => import('./pages/ManageLocationsPage'));
 const AsmLookupPage = React.lazy(() => import('./pages/AsmLookupPage'));
+const CsoOutletLookupPage = React.lazy(() => import('./pages/CsoOutletLookupPage'));
 const CoolerRequestsPage = React.lazy(() => import('./pages/cooler/CoolerRequestsPage'));
 const MarketingRequestsPage = React.lazy(() => import('./pages/marketing/MarketingRequestsPage'));
 const MasterDataSetupPage = React.lazy(() => import('./pages/masterdata/MasterDataSetupPage'));
@@ -224,6 +225,12 @@ const AppRoutes: React.FC = () => {
           <Route path="/asm-lookup" element={
             <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.RSM]}>
               <AsmLookupPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/cso-lookup" element={
+            <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.NHQ_ADMIN, UserRole.BUSINESS_ADMIN, UserRole.RSM]}>
+              <CsoOutletLookupPage />
             </ProtectedRoute>
           } />
 

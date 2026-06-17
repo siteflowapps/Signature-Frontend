@@ -19,6 +19,7 @@ const ADMIN_MENU = [
   { name: 'Payouts', icon: Icons.Payouts, path: '/payouts' },
   { name: 'Reports', icon: Icons.Reports, path: '/reports' },
   { name: 'ASM Lookup', icon: Icons.ASELookup, path: '/asm-lookup' },
+  { name: 'CSO Lookup', icon: Icons.Outlets, path: '/cso-lookup' },
   { name: 'Master Data Setup', icon: Icons.Database, path: '/master-data-setup' },
 ];
 
@@ -29,6 +30,7 @@ const BUSINESS_ADMIN_MENU = [
   { name: 'Locations', icon: Icons.Locations, path: '/manage-locations' },
   { name: 'Users', icon: Icons.Search, path: '/users' },
   { name: 'ASM Lookup', icon: Icons.ASELookup, path: '/asm-lookup' },
+  { name: 'CSO Lookup', icon: Icons.Outlets, path: '/cso-lookup' },
   { name: 'Master Data Setup', icon: Icons.Database, path: '/master-data-setup' },
 ];
 

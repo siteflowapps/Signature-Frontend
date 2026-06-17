@@ -60,7 +60,7 @@ const PayoutsTab: React.FC<PayoutsTabProps> = ({
           .company-sub { font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
           .receipt-title { text-align: right; }
           .receipt-title h2 { font-size: 28px; font-weight: 900; color: #0f172a; letter-spacing: -1px; }
-          .receipt-ref { font-size: 13px; font-weight: 700; color: #3b82f6; margin-top: 4px; }
+          .receipt-ref { font-size: 13px; font-weight: 700; color: #0d9488; margin-top: 4px; }
           .meta-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 36px; }
           .meta-section { }
           .meta-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }

@@ -696,6 +696,35 @@ export interface BulkImportResponse {
 export type LocationBulkUploadResult = BulkImportResult;
 export type LocationBulkUploadResponse = BulkImportResponse;
 
+// ── CSO ↔ Outlet Assignment Types ─────────────────────────────
+// Mirrors the backend OutletFieldAssignmentResponse. Note: the backend reuses the
+// legacy `aseId`/`aseName` fields to carry the assigned field user (the CSO).
+export interface CsoOutletAssignment {
+  id: string;
+  outletId: string;
+  outletName: string;
+  aseId: string | null;   // assigned CSO id
+  aseName: string | null; // assigned CSO name
+  locationId: string | null;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  createdAt: string;
+}
+
+export interface CsoOutletAssignmentListResponse {
+  success: boolean;
+  data: CsoOutletAssignment[];
+  error?: string;
+  timestamp: string;
+}
+
+export interface CsoOutletAssignmentSingleResponse {
+  success: boolean;
+  data: CsoOutletAssignment | null;
+  error?: string;
+  timestamp: string;
+}
+
 // ── User Management Types ────────────────────────────────────
 
 export enum AuthType {
